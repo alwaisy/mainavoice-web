@@ -1,0 +1,50 @@
+[package]
+name = "mainavoice"
+version = "0.1.0"
+description = "Maina Voice Desktop App"
+authors = [ "Maina Voice Team" ]
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "mainavoice_lib"
+crate-type = [
+  "staticlib",
+  "cdylib",
+  "rlib"
+]
+
+[build-dependencies]
+tauri-build = { version = "2.5.3", features = [] }
+
+[dependencies]
+tauri = { version = "2.9.5", features = [] }
+tauri-plugin-shell = "2.3.4"
+tauri-plugin-window-state = "2.4.1"
+tauri-plugin-store = "2.4.2"
+tauri-plugin-decorum = "1.1.1"
+tauri-plugin-devtools = "2.0.1"
+tauri-plugin-log = "2.8.0"
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2.3.7"
+
+
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.149"
+log = "0.4.29"
+rfd = "0.15"
+
+[profile.dev]
+incremental = true # Compile your binary in smaller steps.
+
+# https://tauri.app/concept/size/
+[profile.release]
+codegen-units = 1 # Allows LLVM to perform better optimization.
+lto = true # Enables link-time-optimizations.
+opt-level = "s" # Prioritizes small binary size. Use `3` if you prefer speed.
+panic = "abort" # Higher performance by disabling panic handlers.
+strip = true # Ensures debug symbols are removed.

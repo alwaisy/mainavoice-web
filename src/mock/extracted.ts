@@ -1,0 +1,60 @@
+import type { AIEntity } from '@/schemas/models'
+
+export const mockEntities: AIEntity[] = [
+  {
+    id: 'e1',
+    bookId: 'b1',
+    type: 'person',
+    name: 'William R. Hewlett',
+    description: 'Co-founder of Hewlett-Packard.',
+    context: 'Discussed as an example of a clock builder rather than a time teller.',
+  },
+  {
+    id: 'e2',
+    bookId: 'b1',
+    type: 'person',
+    name: 'David Packard',
+    description: 'Co-founder of Hewlett-Packard.',
+    context: 'Mentioned alongside Hewlett regarding the core ideology of HP.',
+  },
+  {
+    id: 'e3',
+    bookId: 'b1',
+    type: 'company',
+    name: 'Hewlett-Packard',
+    description: 'Technology company used as a primary case study.',
+    context: 'Analyzed for its "HP Way" core ideology and resilience over decades.',
+  },
+  {
+    id: 'e4',
+    bookId: 'b1',
+    type: 'framework',
+    name: 'Clock Building vs. Time Telling',
+    description: 'The concept that building a resilient organization (a clock) is superior to relying on a single visionary leader (a time teller).',
+    context: 'Introduced in Chapter 2 as a fundamental difference between visionary companies and comparison companies.',
+  },
+  {
+    id: 'e5',
+    bookId: 'b1',
+    type: 'framework',
+    name: 'BHAG (Big Hairy Audacious Goal)',
+    description: 'A clear, compelling, and visionary goal that serves as a unifying focal point of effort.',
+    context: 'Used by companies like Boeing and Sony to drive massive progress.',
+  },
+  {
+    id: 'e6',
+    bookId: 'b1',
+    type: 'company',
+    name: 'Sony',
+    description: 'Japanese multinational conglomerate.',
+    context: 'Cited for their early BHAG to change the worldwide perception of Japanese products as being of poor quality.',
+  },
+  {
+    id: 'e7',
+    bookId: 'b1',
+    type: 'stat',
+    name: '15x Market Performance',
+    description: 'Visionary companies outperformed the general stock market by 15 times since 1926.',
+    context: 'Statistical foundation of the entire book\'s premise.',
+  },
+]
