@@ -14,6 +14,16 @@ export interface ModelInfo {
 
 export const ALL_MODELS: ModelInfo[] = [
   {
+    id: 'fish-audio/transcribe-1',
+    name: 'Fish Audio Transcribe-1',
+    provider: 'Fish Audio',
+    costPerMin: 0.0038,
+    latencyGrade: 'fast',
+    accuracyGrade: 'very-high',
+    description: 'Multilingual speech recognition with broad language support.',
+    badge: 'Popular',
+  },
+  {
     id: 'openai/gpt-transcribe',
     name: 'OpenAI GPT-Transcribe',
     provider: 'OpenAI',
@@ -21,7 +31,6 @@ export const ALL_MODELS: ModelInfo[] = [
     latencyGrade: 'fast',
     accuracyGrade: 'state-of-the-art',
     description: 'High-accuracy whisper & multimodal transcription engine.',
-    badge: 'Popular',
   },
   {
     id: 'deepgram/nova-3',
@@ -41,15 +50,6 @@ export const ALL_MODELS: ModelInfo[] = [
     latencyGrade: 'ultra-fast',
     accuracyGrade: 'high',
     description: 'Ultra lightweight speech recognition model optimized for speed.',
-  },
-  {
-    id: 'fish-audio/transcribe-1',
-    name: 'Fish Audio Transcribe-1',
-    provider: 'Fish Audio',
-    costPerMin: 0.0038,
-    latencyGrade: 'fast',
-    accuracyGrade: 'very-high',
-    description: 'Multilingual speech recognition with broad language support.',
   },
 ]
 

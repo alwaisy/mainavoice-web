@@ -35,7 +35,7 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 
 export const useMainaStore = defineStore('maina-store', () => {
   const openRouterApiKey = ref<string>('')
-  const selectedModel = ref<string>('openai/gpt-transcribe')
+  const selectedModel = ref<string>('fish-audio/transcribe-1')
   const themeMode = ref<ThemeMode>('light')
   const history = ref<RecordingHistoryItem[]>([])
   const isInitialized = ref(false)
@@ -56,7 +56,7 @@ export const useMainaStore = defineStore('maina-store', () => {
 
       openRouterApiKey.value = key || ''
       themeMode.value = theme || 'light'
-      selectedModel.value = model || 'openai/gpt-transcribe'
+      selectedModel.value = model || 'fish-audio/transcribe-1'
       autoTranslate.value = autoTrans || false
       history.value = items
 
