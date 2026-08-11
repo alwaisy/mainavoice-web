@@ -134,9 +134,9 @@ export async function exportBackupArchive(): Promise<void> {
       hoursStr = String(h).padStart(2, '0')
     }
 
-    // Sanitize IANA string for filename: "Asia/Karachi" -> "Asia-Karachi"
+    // Drop continent (first segment), keep the rest: "Asia/Karachi" -> "Karachi", "America/Indiana/Indianapolis" -> "Indiana-Indianapolis"
     const ianaSuffix = ianaTimezone
-      ? `_${ianaTimezone.replace(/\//g, '-').replace(/[^\w-]/g, '')}`
+      ? `_${ianaTimezone.split('/').slice(1).join('-').replace(/[^\w-]/g, '')}`
       : ''
 
     return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}${ianaSuffix}.zip`
