@@ -172,7 +172,25 @@ async function runReTranscription() {
       store.openRouterApiKey,
       60,
     )
-    store.addVersionToItem(item.value.id, result)
+
+    if (
+      store.autoTranslate
+      && result.text
+      && !result.text.startsWith('Transcription Error')
+      && !result.text.startsWith('OpenRouter Error')
+      && !result.text.startsWith('Please set')
+    ) {
+      try {
+        const translated = await translateToEnglish(result.text, store.openRouterApiKey)
+        result.translatedText = translated
+        activeTab.value = 'english'
+      }
+      catch (tErr) {
+        console.error(`Auto-translation for new version failed: ${tErr}`)
+      }
+    }
+
+    await store.addVersionToItem(item.value.id, result)
   }
   catch (err: any) {
     console.error(`Re-transcription failed: ${err?.message || err}`)

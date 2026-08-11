@@ -142,6 +142,19 @@ async function toggleBenchmarkRecording() {
 
         const resList = await Promise.all(activePromises)
 
+        if (store.autoTranslate) {
+          for (let i = 0; i < resList.length; i++) {
+            const res = resList[i]
+            if (res && res.text && !res.text.startsWith('Transcription Error') && !res.text.startsWith('OpenRouter Error') && !res.text.startsWith('Please set')) {
+              try {
+                res.translatedText = await translateToEnglish(res.text, store.openRouterApiKey)
+                activeTabs.value[i] = 'english'
+              }
+              catch {}
+            }
+          }
+        }
+
         // Reset results and assign active outputs
         const newResults: (TranscriptionVersion | null)[] = [null, null, null, null, null]
         for (let i = 0; i < resList.length; i++) {
@@ -197,6 +210,20 @@ async function handleFileChange(event: Event) {
     }
 
     const resList = await Promise.all(activePromises)
+
+    if (store.autoTranslate) {
+      for (let i = 0; i < resList.length; i++) {
+        const res = resList[i]
+        if (res && res.text && !res.text.startsWith('Transcription Error') && !res.text.startsWith('OpenRouter Error') && !res.text.startsWith('Please set')) {
+          try {
+            res.translatedText = await translateToEnglish(res.text, store.openRouterApiKey)
+            activeTabs.value[i] = 'english'
+          }
+          catch {}
+        }
+      }
+    }
+
     const newResults: (TranscriptionVersion | null)[] = [null, null, null, null, null]
     for (let i = 0; i < resList.length; i++) {
       newResults[i] = resList[i] ?? null
