@@ -2,6 +2,8 @@
 
 A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text engines, and compare their speed and accuracy side by side. Everything stays local — no server, no account, no sync.
 
+By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
+
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42b883.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)
@@ -49,7 +51,7 @@ All transcription goes through [OpenRouter](https://openrouter.ai), so you only 
 ### Install and run
 
 ```bash
-git clone https://github.com/your-username/mainavoice.git
+git clone https://github.com/alwaisy/mainavoice.git
 cd mainavoice
 pnpm install
 pnpm dev
