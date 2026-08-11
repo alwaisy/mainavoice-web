@@ -266,7 +266,7 @@ onUnmounted(() => {
     <div class="flex items-center justify-center gap-2">
       <Select v-model="store.selectedModel">
         <SelectTrigger class="w-[320px] bg-card border-border shadow-xs">
-          <SelectValue placeholder="Select Transcription Engine" />
+          <SelectValue placeholder="Select speech engine" />
         </SelectTrigger>
 
         <SelectContent>
@@ -305,7 +305,7 @@ onUnmounted(() => {
 
     <!-- Microphone Error Banner -->
     <div v-if="micError" class="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold space-y-1">
-      <p>Microphone Access Error:</p>
+      <p>Microphone error:</p>
       <p class="font-normal font-mono">
         {{ micError }}
       </p>
@@ -343,15 +343,15 @@ onUnmounted(() => {
         </p>
 
         <p v-else-if="isProcessing" class="text-sm font-semibold text-muted-foreground animate-pulse">
-          Processing Cloud Transcription...
+          Transcribing audio...
         </p>
 
         <p v-else class="text-sm font-semibold text-foreground">
-          Click to Record Voice Note
+          Click to record
         </p>
 
         <p v-if="!isRecording && !isProcessing" class="text-xs text-muted-foreground">
-          Your recording will be transcribed instantly using {{ ALL_MODELS.find(m => m.id === store.selectedModel)?.name }}
+          Recorded with {{ ALL_MODELS.find(m => m.id === store.selectedModel)?.name }}
         </p>
       </div>
 

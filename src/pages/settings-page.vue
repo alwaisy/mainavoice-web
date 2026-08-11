@@ -107,10 +107,10 @@ async function handleFactoryReset() {
     <!-- Unboxed Page Title Header -->
     <div class="space-y-1">
       <h1 class="text-xl font-bold text-foreground tracking-tight">
-        Settings & Preferences
+        Settings
       </h1>
       <p class="text-xs font-medium text-muted-foreground">
-        Manage OpenRouter API keys, color mode, application preferences, and backup data.
+        Configure your API key, theme, auto-translation, and backups.
       </p>
     </div>
 
@@ -118,10 +118,10 @@ async function handleFactoryReset() {
     <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
       <div class="space-y-1">
         <h2 class="text-sm font-bold text-foreground">
-          Color Mode / Theme
+          Theme
         </h2>
         <p class="text-xs text-muted-foreground">
-          Choose your preferred design system theme (Warm Off-White Cream vs Deep Warm Neutral).
+          Select light, dark, or follow system settings.
         </p>
       </div>
 
@@ -166,7 +166,7 @@ async function handleFactoryReset() {
             Auto-Translate to English
           </h2>
           <p class="text-xs text-muted-foreground leading-relaxed">
-            Automatically generate and save fluent English translations for new recordings using Qwen 3.7 Flash ($0.03/1M tokens ultra-low cost translation model).
+            Automatically generate English translations for new recordings using Qwen 3.7 Flash.
           </p>
         </div>
 
@@ -186,10 +186,10 @@ async function handleFactoryReset() {
       <div class="space-y-1">
         <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
           <Key class="w-4 h-4 text-primary" />
-          <span>OpenRouter Cloud API Key</span>
+          <span>OpenRouter API Key</span>
         </h2>
         <p class="text-xs text-muted-foreground leading-relaxed">
-          Required for high-accuracy cloud AI models (OpenAI GPT-Transcribe, Deepgram Nova-3, NVIDIA Parakeet). Stored 100% locally on your machine.
+          Required for OpenRouter speech models (OpenAI GPT-Transcribe, Deepgram Nova-3, NVIDIA Parakeet). Saved locally in your browser.
         </p>
       </div>
 
@@ -212,10 +212,10 @@ async function handleFactoryReset() {
             class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400"
           >
             <Check class="w-3.5 h-3.5" />
-            API Key Active & Saved
+            API key saved
           </span>
           <span v-else class="text-xs text-muted-foreground">
-            No API key saved yet.
+            No API key saved.
           </span>
 
           <Button
@@ -225,7 +225,7 @@ async function handleFactoryReset() {
             @click="handleSaveKey"
           >
             <Check v-if="isSaved" class="w-3.5 h-3.5 text-emerald-400" />
-            <span>{{ isSaved ? 'Saved!' : 'Save Key' }}</span>
+            <span>{{ isSaved ? 'Saved' : 'Save Key' }}</span>
           </Button>
         </div>
       </div>
@@ -236,10 +236,10 @@ async function handleFactoryReset() {
       <div class="space-y-1">
         <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
           <Database class="w-4 h-4 text-primary" />
-          <span>Data Management & Backup</span>
+          <span>Data Management</span>
         </h2>
         <p class="text-xs text-muted-foreground leading-relaxed">
-          Export full backups containing transcripts, benchmarking statistics, settings, and binary audio files, restore from backup, or perform a full factory reset.
+          Export your data to a ZIP file, restore from a backup file, or reset the app.
         </p>
       </div>
 

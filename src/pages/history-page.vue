@@ -99,7 +99,7 @@ onUnmounted(() => {
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search transcripts or model names..."
+          placeholder="Search transcripts or models..."
           class="w-full pl-10 pr-4 py-2 rounded-xl bg-card border border-border text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary transition shadow-xs"
         >
       </div>
@@ -112,7 +112,7 @@ onUnmounted(() => {
         @click="store.clearAllHistory()"
       >
         <Trash2 class="w-3.5 h-3.5" />
-        <span>Clear All</span>
+        <span>Clear history</span>
       </Button>
     </div>
 

@@ -273,14 +273,14 @@ onUnmounted(() => {
       >
         <RouterLink to="/history">
           <ArrowLeft class="w-4 h-4 mr-1" />
-          <span>Back to History</span>
+          <span>Back to history</span>
         </RouterLink>
       </Button>
 
       <div class="flex items-center gap-2">
         <span v-if="item.isComparisonSuite" class="inline-flex items-center gap-1 text-xs font-bold text-primary">
           <Swords class="w-3.5 h-3.5" />
-          Comparison Suite Benchmark
+          Comparison suite
         </span>
         <span class="text-xs text-muted-foreground font-medium">
           {{ formatTimestamp(item.createdAt) }}
@@ -305,7 +305,7 @@ onUnmounted(() => {
 
           <div>
             <h2 class="text-xs font-bold text-foreground">
-              Audio Recording Playback
+              Audio playback
             </h2>
             <p class="text-[11px] text-muted-foreground font-mono">
               {{ formatTime(currentTime) }} / {{ formatTime(duration) }}

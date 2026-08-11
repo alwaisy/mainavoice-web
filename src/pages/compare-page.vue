@@ -248,10 +248,10 @@ onUnmounted(() => {
     <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
       <div>
         <h2 class="text-xs font-bold text-foreground">
-          Speech Model Comparison
+          Compare speech engines
         </h2>
         <p class="text-[11px] text-muted-foreground">
-          Compare latency, accuracy, and cost side-by-side.
+          Compare speed, accuracy, and cost across multiple models.
         </p>
       </div>
 
@@ -286,7 +286,7 @@ onUnmounted(() => {
 
     <!-- Microphone Error Alert -->
     <div v-if="micError" class="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold space-y-1">
-      <p>Microphone Access Error:</p>
+      <p>Microphone error:</p>
       <p class="font-normal font-mono">
         {{ micError }}
       </p>
@@ -317,10 +317,10 @@ onUnmounted(() => {
           {{ formatTimer(recordSeconds) }}
         </p>
         <p v-else-if="isProcessing" class="text-xs font-semibold text-muted-foreground animate-pulse">
-          Benchmarking {{ modelCount }} Speech Models in Parallel...
+          Transcribing with {{ modelCount }} engines...
         </p>
         <p v-else class="text-xs font-bold text-foreground">
-          Record Audio Sample
+          Record audio
         </p>
       </div>
 
