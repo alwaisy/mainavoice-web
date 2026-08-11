@@ -51,7 +51,7 @@ All transcription goes through [OpenRouter](https://openrouter.ai), so you only 
 ### Install and run
 
 ```bash
-git clone https://github.com/alwaisy/mainavoice.git
+git clone https://github.com/alwaisy/mainavoice-web.git
 cd mainavoice
 pnpm install
 pnpm dev
