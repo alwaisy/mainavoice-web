@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import {
   dbClearAllRecordings,
   dbDeleteRecording,
@@ -43,6 +43,32 @@ export const useMainaStore = defineStore('maina-store', () => {
   const autoTranslateRecord = ref<boolean>(false)
   const autoTranslateCompare = ref<boolean>(false)
   const autoTranslateHistory = ref<boolean>(false)
+
+  // Watchers to guarantee 100% automatic IndexedDB persistence whenever settings change
+  watch(openRouterApiKey, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('openRouterApiKey', val)
+  })
+  watch(selectedModel, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('selectedModel', val)
+  })
+  watch(themeMode, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('themeMode', val)
+  })
+  watch(autoTranslateRecord, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('autoTranslateRecord', val)
+  })
+  watch(autoTranslateCompare, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('autoTranslateCompare', val)
+  })
+  watch(autoTranslateHistory, (val) => {
+    if (isInitialized.value)
+      dbSetSetting('autoTranslateHistory', val)
+  })
 
   // Initialization function called on app load
   async function initStore() {
