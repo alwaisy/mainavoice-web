@@ -31,6 +31,8 @@ export interface RecordingHistoryItem {
   isComparisonSuite?: boolean
 }
 
+export type ThemeMode = 'light' | 'dark' | 'system'
+
 function getLocalBool(key: string, fallback: boolean): boolean {
   if (typeof window === 'undefined')
     return fallback

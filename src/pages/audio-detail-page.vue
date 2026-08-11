@@ -14,7 +14,7 @@ const router = useRouter()
 const store = useMainaStore()
 
 const itemId = computed(() => route.params.id as string)
-const item = computed<RecordingHistoryItem | undefined>(() => store.history.find(h => h.id === itemId.value))
+const item = computed<RecordingHistoryItem | undefined>(() => store.history.find((h: RecordingHistoryItem) => h.id === itemId.value))
 
 // Standard Single Recording state
 const activeTab = ref<'original' | 'english'>('original')
