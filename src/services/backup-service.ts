@@ -89,7 +89,7 @@ export async function exportBackupArchive(): Promise<void> {
     try {
       const tzMatch = Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(now).find(p => p.type === 'timeZoneName')
       if (tzMatch && tzMatch.value) {
-        tzStr = tzMatch.value.replace(/[^a-zA-Z0-9+-]/g, '')
+        tzStr = tzMatch.value.replace(/[^a-z0-9+-]/gi, '')
       }
     }
     catch {
@@ -183,7 +183,11 @@ export async function importBackupArchive(file: File): Promise<{ recordingsCount
   // 4. Restore Settings to IndexedDB
   const settingKeys = Object.keys(settingsMap)
   for (const key of settingKeys) {
-    await dbSetSetting(key, settingsMap[key])
+    const val = settingsMap[key]
+    await dbSetSetting(key, val)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(key, String(val))
+    }
   }
 
   // 5. Restore Audio Blobs
