@@ -71,29 +71,63 @@ export async function exportBackupArchive(): Promise<void> {
 
   function getFormattedBackupFilename(): string {
     const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
+    const userLocale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'default'
 
-    let hours = now.getHours()
-    const ampm = hours >= 12 ? 'pm' : 'am'
-    hours = hours % 12
-    if (hours === 0)
-      hours = 12
-
-    const hoursStr = String(hours).padStart(2, '0')
-    const minutes = String(now.getMinutes()).padStart(2, '0')
-    const seconds = String(now.getSeconds()).padStart(2, '0')
-
+    let year = String(now.getFullYear())
+    let month = String(now.getMonth() + 1).padStart(2, '0')
+    let day = String(now.getDate()).padStart(2, '0')
+    let hoursStr = ''
+    let minutes = String(now.getMinutes()).padStart(2, '0')
+    let seconds = String(now.getSeconds()).padStart(2, '0')
+    let ampm = now.getHours() >= 12 ? 'pm' : 'am'
     let tzStr = ''
+
     try {
-      const tzMatch = Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(now).find(p => p.type === 'timeZoneName')
-      if (tzMatch && tzMatch.value) {
-        tzStr = tzMatch.value.replace(/[^a-z0-9+-]/gi, '')
+      const formatter = new Intl.DateTimeFormat(userLocale, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+        timeZoneName: 'short',
+      })
+
+      const parts = formatter.formatToParts(now)
+      const partMap: Record<string, string> = {}
+      for (const p of parts) {
+        partMap[p.type] = p.value
+      }
+
+      if (partMap.year)
+        year = partMap.year
+      if (partMap.month)
+        month = partMap.month.padStart(2, '0')
+      if (partMap.day)
+        day = partMap.day.padStart(2, '0')
+      if (partMap.hour)
+        hoursStr = partMap.hour.padStart(2, '0')
+      if (partMap.minute)
+        minutes = partMap.minute.padStart(2, '0')
+      if (partMap.second)
+        seconds = partMap.second.padStart(2, '0')
+      if (partMap.dayPeriod)
+        ampm = partMap.dayPeriod.toLowerCase()
+
+      if (partMap.timeZoneName) {
+        tzStr = partMap.timeZoneName.replace(/[^a-z0-9+-]/gi, '')
       }
     }
     catch {
-      // Fallback timezone calculation
+      // Fallback
+    }
+
+    if (!hoursStr) {
+      let h = now.getHours() % 12
+      if (h === 0)
+        h = 12
+      hoursStr = String(h).padStart(2, '0')
     }
 
     if (!tzStr) {
