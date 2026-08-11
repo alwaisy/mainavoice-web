@@ -194,8 +194,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateRecord"
-            @update:checked="store.setAutoTranslateRecord"
+            v-model:checked="store.autoTranslateRecord"
+            @update:checked="(val: boolean) => store.setAutoTranslateRecord(val)"
           />
         </div>
 
@@ -210,8 +210,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateCompare"
-            @update:checked="store.setAutoTranslateCompare"
+            v-model:checked="store.autoTranslateCompare"
+            @update:checked="(val: boolean) => store.setAutoTranslateCompare(val)"
           />
         </div>
 
@@ -226,8 +226,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateHistory"
-            @update:checked="store.setAutoTranslateHistory"
+            v-model:checked="store.autoTranslateHistory"
+            @update:checked="(val: boolean) => store.setAutoTranslateHistory(val)"
           />
         </div>
       </div>
