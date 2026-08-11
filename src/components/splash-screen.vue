@@ -9,8 +9,8 @@ onMounted(() => {
     hiding.value = true
     setTimeout(() => {
       visible.value = false
-    }, 500)
-  }, 1600)
+    }, 300)
+  }, 800)
 })
 </script>
 
