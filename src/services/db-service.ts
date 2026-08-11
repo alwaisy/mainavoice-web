@@ -107,6 +107,16 @@ export async function dbGetAudioBlob(id: string): Promise<Blob | null> {
   })
 }
 
+export async function dbGetAllAudioBlobs(): Promise<{ id: string, blob: Blob }[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('audio_blobs', 'readonly')
+    const request = tx.objectStore('audio_blobs').getAll()
+    request.onsuccess = () => resolve((request.result || []) as { id: string, blob: Blob }[])
+    request.onerror = () => reject(request.error)
+  })
+}
+
 // --- SETTINGS STORE ---
 export async function dbGetSetting<T = any>(key: string): Promise<T | undefined> {
   const db = await openDB()
@@ -118,11 +128,33 @@ export async function dbGetSetting<T = any>(key: string): Promise<T | undefined>
   })
 }
 
+export async function dbGetAllSettings(): Promise<{ key: string, value: any }[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('settings', 'readonly')
+    const request = tx.objectStore('settings').getAll()
+    request.onsuccess = () => resolve((request.result || []) as { key: string, value: any }[])
+    request.onerror = () => reject(request.error)
+  })
+}
+
 export async function dbSetSetting<T = any>(key: string, value: T): Promise<void> {
   const db = await openDB()
   return new Promise((resolve, reject) => {
     const tx = db.transaction('settings', 'readwrite')
     tx.objectStore('settings').put({ key, value })
+    tx.oncomplete = () => resolve()
+    tx.onerror = () => reject(tx.error)
+  })
+}
+
+export async function dbClearAllData(): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['recordings', 'audio_blobs', 'settings'], 'readwrite')
+    tx.objectStore('recordings').clear()
+    tx.objectStore('audio_blobs').clear()
+    tx.objectStore('settings').clear()
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
   })

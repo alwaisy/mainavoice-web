@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { Check, Key, Laptop, Moon, Sun } from 'lucide-vue-next'
+import { Check, Database, Download, Key, Laptop, Moon, RotateCcw, Sun, Upload } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import { exportBackupArchive, importBackupArchive, performFactoryReset } from '@/services/backup-service'
 import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const apiKeyInput = ref(store.openRouterApiKey)
 const isSaved = ref(false)
+
+const isExporting = ref(false)
+const isImporting = ref(false)
+const isResetting = ref(false)
+const statusMessage = ref<string | null>(null)
+const restoreInputRef = ref<HTMLInputElement | null>(null)
 
 function handleSaveKey() {
   store.setApiKey(apiKeyInput.value)
@@ -14,6 +21,78 @@ function handleSaveKey() {
   setTimeout(() => {
     isSaved.value = false
   }, 2000)
+}
+
+async function handleExport() {
+  isExporting.value = true
+  statusMessage.value = null
+  try {
+    await exportBackupArchive()
+    statusMessage.value = 'Backup archive exported successfully.'
+  }
+  catch (err: any) {
+    statusMessage.value = `Export failed: ${err?.message || err}`
+  }
+  finally {
+    isExporting.value = false
+  }
+}
+
+function triggerRestore() {
+  if (restoreInputRef.value) {
+    restoreInputRef.value.click()
+  }
+}
+
+async function handleFileRestore(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file)
+    return
+
+  // eslint-disable-next-line no-alert
+  if (!confirm('Restoring a backup will OVERWRITE all current recordings, transcript versions, and settings. Are you sure you want to proceed?')) {
+    target.value = ''
+    return
+  }
+
+  isImporting.value = true
+  statusMessage.value = 'Restoring backup data...'
+  try {
+    const res = await importBackupArchive(file)
+    await store.initStore()
+    apiKeyInput.value = store.openRouterApiKey
+    statusMessage.value = `Backup restored successfully (${res.recordingsCount} recordings restored).`
+  }
+  catch (err: any) {
+    statusMessage.value = `Restore failed: ${err?.message || err}`
+  }
+  finally {
+    isImporting.value = false
+    target.value = ''
+  }
+}
+
+async function handleFactoryReset() {
+  // eslint-disable-next-line no-alert
+  if (!confirm('WARNING: Factory Reset will permanently delete ALL recordings, audio files, and saved settings. This action cannot be undone. Are you sure?')) {
+    return
+  }
+
+  isResetting.value = true
+  statusMessage.value = 'Performing factory reset...'
+  try {
+    await performFactoryReset()
+    await store.initStore()
+    apiKeyInput.value = ''
+    statusMessage.value = 'Factory reset complete. All data has been cleared.'
+  }
+  catch (err: any) {
+    statusMessage.value = `Reset failed: ${err?.message || err}`
+  }
+  finally {
+    isResetting.value = false
+  }
 }
 </script>
 
@@ -25,7 +104,7 @@ function handleSaveKey() {
         Settings & Preferences
       </h1>
       <p class="text-xs font-medium text-muted-foreground">
-        Manage OpenRouter API keys, color mode, and application preferences.
+        Manage OpenRouter API keys, color mode, application preferences, and backup data.
       </p>
     </div>
 
@@ -143,6 +222,69 @@ function handleSaveKey() {
             <span>{{ isSaved ? 'Saved!' : 'Save Key' }}</span>
           </Button>
         </div>
+      </div>
+    </div>
+
+    <!-- 4. Data Management: Backup, Restore & Reset Card -->
+    <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
+      <div class="space-y-1">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <Database class="w-4 h-4 text-primary" />
+          <span>Data Management & Backup</span>
+        </h2>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          Export full backups containing transcripts, benchmarking statistics, settings, and binary audio files, restore from backup, or perform a full factory reset.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+        <!-- Export Backup -->
+        <Button
+          size="lg"
+          variant="outline"
+          class="flex items-center justify-center gap-2 font-bold cursor-pointer h-12 border-border"
+          :disabled="isExporting"
+          @click="handleExport"
+        >
+          <Download class="w-4 h-4 text-primary" />
+          <span>{{ isExporting ? 'Exporting...' : 'Export Backup (.zip)' }}</span>
+        </Button>
+
+        <!-- Restore Backup -->
+        <Button
+          size="lg"
+          variant="outline"
+          class="flex items-center justify-center gap-2 font-bold cursor-pointer h-12 border-border"
+          :disabled="isImporting"
+          @click="triggerRestore"
+        >
+          <Upload class="w-4 h-4 text-amber-500" />
+          <span>{{ isImporting ? 'Restoring...' : 'Restore Backup' }}</span>
+        </Button>
+
+        <!-- Factory Reset -->
+        <Button
+          size="lg"
+          variant="destructive"
+          class="flex items-center justify-center gap-2 font-bold cursor-pointer h-12"
+          :disabled="isResetting"
+          @click="handleFactoryReset"
+        >
+          <RotateCcw class="w-4 h-4" />
+          <span>{{ isResetting ? 'Resetting...' : 'Factory Reset' }}</span>
+        </Button>
+
+        <input
+          ref="restoreInputRef"
+          type="file"
+          accept=".zip"
+          class="hidden"
+          @change="handleFileRestore"
+        >
+      </div>
+
+      <div v-if="statusMessage" class="p-3 rounded-lg bg-muted text-xs font-medium text-foreground border border-border">
+        {{ statusMessage }}
       </div>
     </div>
 
