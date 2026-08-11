@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Check, Database, Download, Globe, Key, Laptop, Moon, RotateCcw, Sun, Upload } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { exportBackupArchive, importBackupArchive, performFactoryReset } from '@/services/backup-service'
@@ -8,6 +8,17 @@ import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const apiKeyInput = ref(store.openRouterApiKey)
+
+// Keep input synced when store initializes asynchronously from IndexedDB on page reload
+watch(
+  () => store.openRouterApiKey,
+  (newKey) => {
+    if (newKey && !apiKeyInput.value) {
+      apiKeyInput.value = newKey
+    }
+  },
+  { immediate: true },
+)
 const isSaved = ref(false)
 
 const isExporting = ref(false)
@@ -175,7 +186,9 @@ async function handleFactoryReset() {
         <!-- Option 1: Record Page -->
         <div class="flex items-center justify-between gap-4">
           <div class="space-y-0.5 max-w-[80%]">
-            <div class="text-xs font-bold text-foreground">Record Page</div>
+            <div class="text-xs font-bold text-foreground">
+              Record Page
+            </div>
             <p class="text-[11px] text-muted-foreground leading-relaxed">
               Auto-translates single-engine voice notes immediately after recording.
             </p>
@@ -189,7 +202,9 @@ async function handleFactoryReset() {
         <!-- Option 2: Compare Page -->
         <div class="flex items-center justify-between gap-4 pt-3 border-t border-border/60">
           <div class="space-y-0.5 max-w-[80%]">
-            <div class="text-xs font-bold text-foreground">Compare Page</div>
+            <div class="text-xs font-bold text-foreground">
+              Compare Page
+            </div>
             <p class="text-[11px] text-muted-foreground leading-relaxed">
               Auto-translates multi-engine benchmark results. Keep off to avoid triggering up to 4 parallel translation API calls at once.
             </p>
@@ -203,7 +218,9 @@ async function handleFactoryReset() {
         <!-- Option 3: History Page Re-transcription -->
         <div class="flex items-center justify-between gap-4 pt-3 border-t border-border/60">
           <div class="space-y-0.5 max-w-[80%]">
-            <div class="text-xs font-bold text-foreground">History Re-transcription</div>
+            <div class="text-xs font-bold text-foreground">
+              History Re-transcription
+            </div>
             <p class="text-[11px] text-muted-foreground leading-relaxed">
               Auto-translates newly generated versions when re-transcribing recordings with different AI models in History view.
             </p>
