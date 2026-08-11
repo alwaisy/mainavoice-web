@@ -60,7 +60,7 @@ const splashOgDark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 
 
   <!-- Typography -->
   <text x="600" y="375" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="44" font-weight="800" fill="#e8e3da" letter-spacing="-1">Maina Voice</text>
-  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#8e8a83" letter-spacing="0">AI Voice Dictation &amp; Multi-Model Engine Benchmarking</text>
+  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#8e8a83" letter-spacing="0">Speech to Text &amp; Model Benchmarking</text>
 
   <!-- Loading Dots -->
   <g transform="translate(600, 480)">
@@ -69,7 +69,7 @@ const splashOgDark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 
     <circle cx="32" cy="0" r="7" fill="#d1cfc0"/>
   </g>
 
-  <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#5c5a56" letter-spacing="0.5">100% Client-Side IndexedDB Privacy • OpenRouter Cloud AI Integration</text>
+  <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#5c5a56" letter-spacing="0.5">Local IndexedDB Storage • OpenRouter Integration</text>
 </svg>`
 
 // Generate Light Mode Splash-screen Styled OG Social Image (1200x630)
@@ -100,7 +100,7 @@ const splashOgLight = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200
 
   <!-- Typography -->
   <text x="600" y="375" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="44" font-weight="800" fill="#1e1e1e" letter-spacing="-1">Maina Voice</text>
-  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#5e5a52" letter-spacing="0">AI Voice Dictation &amp; Multi-Model Engine Benchmarking</text>
+  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#5e5a52" letter-spacing="0">Speech to Text &amp; Model Benchmarking</text>
 
   <!-- Loading Dots -->
   <g transform="translate(600, 480)">
@@ -109,7 +109,7 @@ const splashOgLight = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200
     <circle cx="32" cy="0" r="7" fill="#2e2e2e"/>
   </g>
 
-  <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#a89f8f" letter-spacing="0.5">100% Client-Side IndexedDB Privacy • OpenRouter Cloud AI Integration</text>
+  <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#a89f8f" letter-spacing="0.5">Local IndexedDB Storage • OpenRouter Integration</text>
 </svg>`
 
 const resvgDark = new Resvg(Buffer.from(splashOgDark), { fitTo: { mode: 'width', value: 1200 } })

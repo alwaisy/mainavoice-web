@@ -32,7 +32,7 @@ export default defineConfig(async () => ({
       manifest: {
         name: 'Maina Voice',
         short_name: 'MainaVoice',
-        description: 'Native AI Voice Transcription & Multi-Engine Benchmarking App. 100% Client-Side Data Privacy with IndexedDB and OpenRouter cloud AI integration.',
+        description: 'Speech-to-text dictation and multi-engine speed benchmarking with local IndexedDB storage.',
         theme_color: '#141414',
         background_color: '#141414',
         display: 'standalone',
