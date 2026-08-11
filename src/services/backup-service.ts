@@ -71,8 +71,17 @@ export async function exportBackupArchive(): Promise<void> {
 
   function getFormattedBackupFilename(): string {
     const now = new Date()
-    const userLocale = typeof navigator !== 'undefined' && navigator.language ? navigator.language : 'default'
 
+    // Get IANA timezone string from browser OS timezone (e.g. "Asia/Karachi")
+    let ianaTimezone = ''
+    try {
+      ianaTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? ''
+    }
+    catch {
+      // ignore
+    }
+
+    // Format date parts using the IANA timezone for accuracy
     let year = String(now.getFullYear())
     let month = String(now.getMonth() + 1).padStart(2, '0')
     let day = String(now.getDate()).padStart(2, '0')
@@ -80,10 +89,9 @@ export async function exportBackupArchive(): Promise<void> {
     let minutes = String(now.getMinutes()).padStart(2, '0')
     let seconds = String(now.getSeconds()).padStart(2, '0')
     let ampm = now.getHours() >= 12 ? 'pm' : 'am'
-    let tzStr = ''
 
     try {
-      const formatter = new Intl.DateTimeFormat(userLocale, {
+      const formatter = new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -91,7 +99,7 @@ export async function exportBackupArchive(): Promise<void> {
         minute: '2-digit',
         second: '2-digit',
         hour12: true,
-        timeZoneName: 'short',
+        timeZone: ianaTimezone || undefined,
       })
 
       const parts = formatter.formatToParts(now)
@@ -114,10 +122,6 @@ export async function exportBackupArchive(): Promise<void> {
         seconds = partMap.second.padStart(2, '0')
       if (partMap.dayPeriod)
         ampm = partMap.dayPeriod.toLowerCase()
-
-      if (partMap.timeZoneName) {
-        tzStr = partMap.timeZoneName.replace(/[^a-z0-9+-]/gi, '')
-      }
     }
     catch {
       // Fallback
@@ -130,34 +134,12 @@ export async function exportBackupArchive(): Promise<void> {
       hoursStr = String(h).padStart(2, '0')
     }
 
-    if (!tzStr) {
-      const offsetMin = -now.getTimezoneOffset()
-      const sign = offsetMin >= 0 ? '+' : '-'
-      const absOffsetMin = Math.abs(offsetMin)
-      const tzHours = String(Math.floor(absOffsetMin / 60))
-      const tzMins = String(absOffsetMin % 60).padStart(2, '0')
-      tzStr = `GMT${sign}${tzHours}${tzMins !== '00' ? tzMins : ''}`
-    }
+    // Sanitize IANA string for filename: "Asia/Karachi" -> "Asia-Karachi"
+    const ianaSuffix = ianaTimezone
+      ? `_${ianaTimezone.replace(/\//g, '-').replace(/[^\w-]/g, '')}`
+      : ''
 
-    let countryCode = ''
-    if (typeof navigator !== 'undefined') {
-      const locales = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language]
-      for (const loc of locales) {
-        if (loc) {
-          const parts = loc.split('-')
-          if (parts.length > 1) {
-            const region = (parts[parts.length - 1] ?? '').toUpperCase()
-            if (region.length === 2 && /^[A-Z]{2}$/.test(region)) {
-              countryCode = region
-              break
-            }
-          }
-        }
-      }
-    }
-
-    const countrySuffix = countryCode ? `_${countryCode}` : ''
-    return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}${countrySuffix}_${tzStr}.zip`
+    return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}${ianaSuffix}.zip`
   }
 
   const zipBlob = await zip.generateAsync({ type: 'blob' })
