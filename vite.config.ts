@@ -30,7 +30,7 @@ export default defineConfig(async () => ({
         'robots.txt',
       ],
       manifest: {
-        name: 'Maina Voice — AI Voice Transcription & Benchmarking',
+        name: 'Maina Voice',
         short_name: 'MainaVoice',
         description: 'Native AI Voice Transcription & Multi-Engine Benchmarking App. 100% Client-Side Data Privacy with IndexedDB and OpenRouter cloud AI integration.',
         theme_color: '#141414',
