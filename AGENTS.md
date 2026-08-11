@@ -24,7 +24,6 @@ Native AI Voice Transcription & Engine Benchmarking Desktop App built with Vue 3
 │ ├─ i18n/ → Localization files and language settings
 │ ├─ layouts/ → Shared page layout components
 │ ├─ lib/ → General helper utility functions
-│ ├─ mock/ → Mock test data generators
 │ ├─ pages/ → Main application page views
 │ ├─ router/ → Vue Router route definitions
 │ ├─ schemas/ → Zod schemas for data validation
