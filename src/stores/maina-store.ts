@@ -40,7 +40,9 @@ export const useMainaStore = defineStore('maina-store', () => {
   const history = ref<RecordingHistoryItem[]>([])
   const isInitialized = ref(false)
 
-  const autoTranslate = ref<boolean>(false)
+  const autoTranslateRecord = ref<boolean>(false)
+  const autoTranslateCompare = ref<boolean>(false)
+  const autoTranslateHistory = ref<boolean>(false)
 
   // Initialization function called on app load
   async function initStore() {
@@ -51,13 +53,21 @@ export const useMainaStore = defineStore('maina-store', () => {
       const key = await dbGetSetting<string>('openRouterApiKey')
       const theme = await dbGetSetting<ThemeMode>('themeMode')
       const model = await dbGetSetting<string>('selectedModel')
-      const autoTrans = await dbGetSetting<boolean>('autoTranslate')
+
+      const legacyTrans = await dbGetSetting<boolean>('autoTranslate')
+      const recTrans = await dbGetSetting<boolean>('autoTranslateRecord')
+      const compTrans = await dbGetSetting<boolean>('autoTranslateCompare')
+      const histTrans = await dbGetSetting<boolean>('autoTranslateHistory')
       const items = await dbGetAllRecordings()
 
       openRouterApiKey.value = key || ''
       themeMode.value = theme || 'light'
       selectedModel.value = model || 'fish-audio/transcribe-1'
-      autoTranslate.value = autoTrans || false
+
+      autoTranslateRecord.value = recTrans ?? legacyTrans ?? false
+      autoTranslateCompare.value = compTrans ?? legacyTrans ?? false
+      autoTranslateHistory.value = histTrans ?? legacyTrans ?? false
+
       history.value = items
 
       applyTheme(themeMode.value)
@@ -68,9 +78,19 @@ export const useMainaStore = defineStore('maina-store', () => {
     }
   }
 
-  async function setAutoTranslate(val: boolean) {
-    autoTranslate.value = val
-    await dbSetSetting('autoTranslate', val)
+  async function setAutoTranslateRecord(val: boolean) {
+    autoTranslateRecord.value = val
+    await dbSetSetting('autoTranslateRecord', val)
+  }
+
+  async function setAutoTranslateCompare(val: boolean) {
+    autoTranslateCompare.value = val
+    await dbSetSetting('autoTranslateCompare', val)
+  }
+
+  async function setAutoTranslateHistory(val: boolean) {
+    autoTranslateHistory.value = val
+    await dbSetSetting('autoTranslateHistory', val)
   }
 
   function applyTheme(mode: ThemeMode) {
@@ -249,14 +269,18 @@ export const useMainaStore = defineStore('maina-store', () => {
     openRouterApiKey,
     selectedModel,
     themeMode,
-    autoTranslate,
+    autoTranslateRecord,
+    autoTranslateCompare,
+    autoTranslateHistory,
     history,
     isInitialized,
     initStore,
     setThemeMode,
     setApiKey,
     setSelectedModel,
-    setAutoTranslate,
+    setAutoTranslateRecord,
+    setAutoTranslateCompare,
+    setAutoTranslateHistory,
     saveHistoryItem,
     addOrUpdateHistoryItem,
     saveComparisonSuite,

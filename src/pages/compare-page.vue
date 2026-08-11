@@ -142,7 +142,7 @@ async function toggleBenchmarkRecording() {
 
         const resList = await Promise.all(activePromises)
 
-        if (store.autoTranslate) {
+        if (store.autoTranslateCompare) {
           for (let i = 0; i < resList.length; i++) {
             const res = resList[i]
             if (res && res.text && !res.text.startsWith('Transcription Error') && !res.text.startsWith('OpenRouter Error') && !res.text.startsWith('Please set')) {
@@ -211,7 +211,7 @@ async function handleFileChange(event: Event) {
 
     const resList = await Promise.all(activePromises)
 
-    if (store.autoTranslate) {
+    if (store.autoTranslateCompare) {
       for (let i = 0; i < resList.length; i++) {
         const res = resList[i]
         if (res && res.text && !res.text.startsWith('Transcription Error') && !res.text.startsWith('OpenRouter Error') && !res.text.startsWith('Please set')) {

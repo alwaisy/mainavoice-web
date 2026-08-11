@@ -123,7 +123,7 @@ async function toggleRecording() {
         isProcessing.value = false
 
         if (result.text && !result.text.startsWith('Error')) {
-          if (store.autoTranslate) {
+          if (store.autoTranslateRecord) {
             const translated = await translateToEnglish(result.text, store.openRouterApiKey)
             result.translatedText = translated
             activeTab.value = 'english'

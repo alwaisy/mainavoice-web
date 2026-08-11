@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Check, Database, Download, Key, Laptop, Moon, RotateCcw, Sun, Upload } from 'lucide-vue-next'
+import { Check, Database, Download, Globe, Key, Laptop, Moon, RotateCcw, Sun, Upload } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import { exportBackupArchive, importBackupArchive, performFactoryReset } from '@/services/backup-service'
 import { useMainaStore } from '@/stores/maina-store'
 
@@ -158,26 +159,60 @@ async function handleFactoryReset() {
       </div>
     </div>
 
-    <!-- 2. Auto-Translate Preference Card -->
-    <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
-      <div class="flex items-center justify-between gap-4">
-        <div class="space-y-1">
-          <h2 class="text-sm font-bold text-foreground">
-            Auto-Translate to English
-          </h2>
-          <p class="text-xs text-muted-foreground leading-relaxed">
-            Automatically generate English translations for new recordings using Qwen 3.7 Flash.
-          </p>
+    <!-- 2. Granular Auto-Translate Options Card -->
+    <div class="rounded-xl border border-border bg-card p-6 space-y-5 shadow-xs">
+      <div class="space-y-1 border-b border-border pb-3">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <Globe class="w-4 h-4 text-primary" />
+          <span>Auto-Translate to English</span>
+        </h2>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          Configure where automated English translation should run using Qwen 3.7 Flash.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Option 1: Record Page -->
+        <div class="flex items-center justify-between gap-4">
+          <div class="space-y-0.5 max-w-[80%]">
+            <div class="text-xs font-bold text-foreground">Record Page</div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              Auto-translates single-engine voice notes immediately after recording.
+            </p>
+          </div>
+          <Switch
+            :checked="store.autoTranslateRecord"
+            @update:checked="store.setAutoTranslateRecord"
+          />
         </div>
 
-        <Button
-          size="sm"
-          :variant="store.autoTranslate ? 'default' : 'outline'"
-          class="font-bold cursor-pointer shrink-0"
-          @click="store.setAutoTranslate(!store.autoTranslate)"
-        >
-          <span>{{ store.autoTranslate ? 'Enabled' : 'Disabled' }}</span>
-        </Button>
+        <!-- Option 2: Compare Page -->
+        <div class="flex items-center justify-between gap-4 pt-3 border-t border-border/60">
+          <div class="space-y-0.5 max-w-[80%]">
+            <div class="text-xs font-bold text-foreground">Compare Page</div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              Auto-translates multi-engine benchmark results. Keep off to avoid triggering up to 4 parallel translation API calls at once.
+            </p>
+          </div>
+          <Switch
+            :checked="store.autoTranslateCompare"
+            @update:checked="store.setAutoTranslateCompare"
+          />
+        </div>
+
+        <!-- Option 3: History Page Re-transcription -->
+        <div class="flex items-center justify-between gap-4 pt-3 border-t border-border/60">
+          <div class="space-y-0.5 max-w-[80%]">
+            <div class="text-xs font-bold text-foreground">History Re-transcription</div>
+            <p class="text-[11px] text-muted-foreground leading-relaxed">
+              Auto-translates newly generated versions when re-transcribing recordings with different AI models in History view.
+            </p>
+          </div>
+          <Switch
+            :checked="store.autoTranslateHistory"
+            @update:checked="store.setAutoTranslateHistory"
+          />
+        </div>
       </div>
     </div>
 

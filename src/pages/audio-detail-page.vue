@@ -174,7 +174,7 @@ async function runReTranscription() {
     )
 
     if (
-      store.autoTranslate
+      store.autoTranslateHistory
       && result.text
       && !result.text.startsWith('Transcription Error')
       && !result.text.startsWith('OpenRouter Error')
@@ -563,7 +563,7 @@ onUnmounted(() => {
               :model-value="item.activeVersionIndex.toString()"
               @update:model-value="(val) => { if (item && val) store.setActiveVersion(item.id, Number.parseInt(val as string)) }"
             >
-              <SelectTrigger class="w-[140px] h-8 text-xs font-bold bg-muted border-border">
+              <SelectTrigger class="h-8 text-xs font-bold bg-muted border-border">
                 <SelectValue placeholder="Select version" />
               </SelectTrigger>
               <SelectContent>
