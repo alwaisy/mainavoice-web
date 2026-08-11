@@ -69,13 +69,51 @@ export async function exportBackupArchive(): Promise<void> {
     }
   }
 
-  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  function getFormattedBackupFilename(): string {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
 
-  const dateStr = new Date().toISOString().slice(0, 10)
+    let hours = now.getHours()
+    const ampm = hours >= 12 ? 'pm' : 'am'
+    hours = hours % 12
+    if (hours === 0)
+      hours = 12
+
+    const hoursStr = String(hours).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const seconds = String(now.getSeconds()).padStart(2, '0')
+
+    let tzStr = ''
+    try {
+      const tzMatch = Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(now).find(p => p.type === 'timeZoneName')
+      if (tzMatch && tzMatch.value) {
+        tzStr = tzMatch.value.replace(/[^a-zA-Z0-9+-]/g, '')
+      }
+    }
+    catch {
+      // Fallback timezone calculation
+    }
+
+    if (!tzStr) {
+      const offsetMin = -now.getTimezoneOffset()
+      const sign = offsetMin >= 0 ? '+' : '-'
+      const absOffsetMin = Math.abs(offsetMin)
+      const tzHours = String(Math.floor(absOffsetMin / 60))
+      const tzMins = String(absOffsetMin % 60).padStart(2, '0')
+      tzStr = `GMT${sign}${tzHours}${tzMins !== '00' ? tzMins : ''}`
+    }
+
+    return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}_${tzStr}.zip`
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' })
+  const filename = getFormattedBackupFilename()
   const downloadUrl = URL.createObjectURL(zipBlob)
   const a = document.createElement('a')
   a.href = downloadUrl
-  a.download = `mainavoice_backup_${dateStr}.zip`
+  a.download = filename
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
