@@ -62,7 +62,10 @@ async function handleFileRestore(event: Event) {
     const res = await importBackupArchive(file)
     await store.initStore()
     apiKeyInput.value = store.openRouterApiKey
-    statusMessage.value = `Backup restored successfully (${res.recordingsCount} recordings restored).`
+    statusMessage.value = `Backup restored successfully (${res.recordingsCount} recordings restored). Redirecting...`
+    setTimeout(() => {
+      window.location.href = '/history'
+    }, 1000)
   }
   catch (err: any) {
     statusMessage.value = `Restore failed: ${err?.message || err}`
@@ -85,7 +88,10 @@ async function handleFactoryReset() {
     await performFactoryReset()
     await store.initStore()
     apiKeyInput.value = ''
-    statusMessage.value = 'Factory reset complete. All data has been cleared.'
+    statusMessage.value = 'Factory reset complete. All data has been cleared. Redirecting...'
+    setTimeout(() => {
+      window.location.href = '/history'
+    }, 1000)
   }
   catch (err: any) {
     statusMessage.value = `Reset failed: ${err?.message || err}`
