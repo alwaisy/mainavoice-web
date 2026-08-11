@@ -69,7 +69,7 @@ State management is handled by Pinia (`maina-store.ts`), managing audio recordin
 
 ## Git Workflows
 
-• Branches: `main` for release builds, `feature/*` for active development.
+• Branches: `master` for release builds, `feature/*` for active development.
 • Commits: Conventional Commits format (`feat:`, `fix:`, `chore:`, `docs:`).
 • PRs: Must pass type check and linting checks before merging.
 
