@@ -555,13 +555,13 @@ onUnmounted(() => {
                   :value="idx.toString()"
                   class="text-xs font-medium"
                 >
-                  Version {{ ver.versionNumber }} (v{{ ver.versionNumber }})
+                  v{{ ver.versionNumber }}
                 </SelectItem>
               </SelectContent>
             </Select>
 
             <span v-else-if="activeVersion" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground border border-border">
-              v1.0 (Initial)
+              v1
             </span>
 
             <!-- Tab Controls -->

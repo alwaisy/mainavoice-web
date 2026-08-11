@@ -381,7 +381,7 @@ onUnmounted(() => {
               v-if="activeResult"
               class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary text-primary-foreground"
             >
-              v1.0
+              v1
             </span>
           </h3>
 
