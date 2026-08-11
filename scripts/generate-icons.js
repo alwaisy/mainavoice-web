@@ -3,10 +3,8 @@ import path from 'node:path'
 import { Resvg } from '@resvg/resvg-js'
 
 const publicDir = path.resolve(process.cwd(), 'public')
-const svgPath = path.join(publicDir, 'icon.svg')
-const svgBuffer = fs.readFileSync(svgPath)
 
-function renderPng(width, outputPath) {
+function renderPngFromSvg(svgBuffer, width, outputPath) {
   const resvg = new Resvg(svgBuffer, {
     fitTo: {
       mode: 'width',
@@ -16,63 +14,109 @@ function renderPng(width, outputPath) {
   const pngData = resvg.render()
   const pngBuffer = pngData.asPng()
   fs.writeFileSync(outputPath, pngBuffer)
-  console.log(`Generated ${outputPath} (${width}x${width})`)
+  console.log(`Generated ${path.basename(outputPath)} (${width}x${width})`)
 }
 
-renderPng(192, path.join(publicDir, 'pwa-192x192.png'))
-renderPng(512, path.join(publicDir, 'pwa-512x512.png'))
-renderPng(180, path.join(publicDir, 'apple-touch-icon.png'))
-renderPng(512, path.join(publicDir, 'pwa-maskable-512x512.png'))
+const svgLight = fs.readFileSync(path.join(publicDir, 'icon-light.svg'))
+const svgDark = fs.readFileSync(path.join(publicDir, 'icon-dark.svg'))
 
-// Generate OG Social Preview Image (1200x630) modeled directly after splash-screen.vue using dark design system tokens
-const splashOgSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+// Light Mode Icons
+renderPngFromSvg(svgLight, 192, path.join(publicDir, 'pwa-192x192.png'))
+renderPngFromSvg(svgLight, 512, path.join(publicDir, 'pwa-512x512.png'))
+renderPngFromSvg(svgLight, 180, path.join(publicDir, 'apple-touch-icon.png'))
+renderPngFromSvg(svgLight, 512, path.join(publicDir, 'pwa-maskable-512x512.png'))
+
+// Dark Mode Adaptive Icons
+renderPngFromSvg(svgDark, 192, path.join(publicDir, 'pwa-192x192-dark.png'))
+renderPngFromSvg(svgDark, 512, path.join(publicDir, 'pwa-512x512-dark.png'))
+renderPngFromSvg(svgDark, 180, path.join(publicDir, 'apple-touch-icon-dark.png'))
+renderPngFromSvg(svgDark, 512, path.join(publicDir, 'pwa-maskable-512x512-dark.png'))
+
+// Generate Dark Mode Splash-screen Styled OG Social Image (1200x630)
+const splashOgDark = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
-    <!-- Background Radial Glow matching splash-screen.vue -->
-    <radialGradient id="glow" cx="50%" cy="45%" r="50%">
+    <radialGradient id="glowDark" cx="50%" cy="45%" r="50%">
       <stop offset="0%" stop-color="#d1cfc0" stop-opacity="0.18"/>
       <stop offset="100%" stop-color="#141414" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
-  <!-- Deep Warm Neutral Background (background: #141414) -->
   <rect width="1200" height="630" fill="#141414"/>
-
-  <!-- Radial Glow Backdrop -->
-  <circle cx="600" cy="260" r="380" fill="url(#glow)"/>
-
-  <!-- Subtle outer border frame -->
+  <circle cx="600" cy="260" r="380" fill="url(#glowDark)"/>
   <rect x="24" y="24" width="1152" height="582" rx="28" fill="none" stroke="#2c2c2c" stroke-width="2"/>
 
-  <!-- Splash Icon Container (card: #1c1c1c, border: #2c2c2c) -->
+  <!-- Splash Icon Container -->
   <g transform="translate(600, 220)">
     <rect x="-60" y="-60" width="120" height="120" rx="28" fill="#1c1c1c" stroke="#2c2c2c" stroke-width="3"/>
     
-    <!-- Mic icon (foreground: #e8e3da) -->
-    <g transform="translate(0, -5)">
-      <rect x="-16" y="-30" width="32" height="54" rx="16" fill="#e8e3da"/>
-      <path d="M -26 2 A 26 26 0 0 0 26 2" fill="none" stroke="#e8e3da" stroke-width="6" stroke-linecap="round"/>
-      <line x1="0" y1="28" x2="0" y2="44" stroke="#e8e3da" stroke-width="6" stroke-linecap="round"/>
-      <line x1="-16" y1="44" x2="16" y2="44" stroke="#e8e3da" stroke-width="6" stroke-linecap="round"/>
+    <!-- Lucide Mic icon -->
+    <g transform="translate(0, -6) scale(3.5)">
+      <rect x="-3" y="-10" width="6" height="11" rx="3" fill="#e8e3da"/>
+      <path d="M -7 -1 A 7 7 0 0 0 7 -1" fill="none" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="0" y1="6" x2="0" y2="10" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="-4" y1="10" x2="4" y2="10" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round"/>
     </g>
   </g>
 
-  <!-- App Title & Subtitle matching Splash Screen -->
+  <!-- Typography -->
   <text x="600" y="375" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="44" font-weight="800" fill="#e8e3da" letter-spacing="-1">Maina Voice</text>
   <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#8e8a83" letter-spacing="0">AI Voice Dictation &amp; Multi-Model Engine Benchmarking</text>
 
-  <!-- Animated Loading Dots matching splash-screen.vue (primary: #d1cfc0) -->
+  <!-- Loading Dots -->
   <g transform="translate(600, 480)">
     <circle cx="-32" cy="0" r="7" fill="#d1cfc0"/>
     <circle cx="0" cy="0" r="9" fill="#d1cfc0"/>
     <circle cx="32" cy="0" r="7" fill="#d1cfc0"/>
   </g>
 
-  <!-- Bottom Brand Footer -->
   <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#5c5a56" letter-spacing="0.5">100% Client-Side IndexedDB Privacy • OpenRouter Cloud AI Integration</text>
 </svg>`
 
-const resvgOg = new Resvg(Buffer.from(splashOgSvg), {
-  fitTo: { mode: 'width', value: 1200 },
-})
-fs.writeFileSync(path.join(publicDir, 'og-image.png'), resvgOg.render().asPng())
-console.log('Generated Splash-screen styled og-image.png (1200x630)')
+// Generate Light Mode Splash-screen Styled OG Social Image (1200x630)
+const splashOgLight = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="glowLight" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#2e2e2e" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#e9e4d8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#e9e4d8"/>
+  <circle cx="600" cy="260" r="380" fill="url(#glowLight)"/>
+  <rect x="24" y="24" width="1152" height="582" rx="28" fill="none" stroke="#d2cbbb" stroke-width="2"/>
+
+  <!-- Splash Icon Container -->
+  <g transform="translate(600, 220)">
+    <rect x="-60" y="-60" width="120" height="120" rx="28" fill="#f4efe4" stroke="#d2cbbb" stroke-width="3"/>
+    
+    <!-- Lucide Mic icon -->
+    <g transform="translate(0, -6) scale(3.5)">
+      <rect x="-3" y="-10" width="6" height="11" rx="3" fill="#1e1e1e"/>
+      <path d="M -7 -1 A 7 7 0 0 0 7 -1" fill="none" stroke="#1e1e1e" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="0" y1="6" x2="0" y2="10" stroke="#1e1e1e" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="-4" y1="10" x2="4" y2="10" stroke="#1e1e1e" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <!-- Typography -->
+  <text x="600" y="375" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="44" font-weight="800" fill="#1e1e1e" letter-spacing="-1">Maina Voice</text>
+  <text x="600" y="420" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#5e5a52" letter-spacing="0">AI Voice Dictation &amp; Multi-Model Engine Benchmarking</text>
+
+  <!-- Loading Dots -->
+  <g transform="translate(600, 480)">
+    <circle cx="-32" cy="0" r="7" fill="#2e2e2e"/>
+    <circle cx="0" cy="0" r="9" fill="#2e2e2e"/>
+    <circle cx="32" cy="0" r="7" fill="#2e2e2e"/>
+  </g>
+
+  <text x="600" y="565" text-anchor="middle" font-family="Inter, system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#a89f8f" letter-spacing="0.5">100% Client-Side IndexedDB Privacy • OpenRouter Cloud AI Integration</text>
+</svg>`
+
+const resvgDark = new Resvg(Buffer.from(splashOgDark), { fitTo: { mode: 'width', value: 1200 } })
+fs.writeFileSync(path.join(publicDir, 'og-image.png'), resvgDark.render().asPng())
+fs.writeFileSync(path.join(publicDir, 'og-image-dark.png'), resvgDark.render().asPng())
+
+const resvgLight = new Resvg(Buffer.from(splashOgLight), { fitTo: { mode: 'width', value: 1200 } })
+fs.writeFileSync(path.join(publicDir, 'og-image-light.png'), resvgLight.render().asPng())
+
+console.log('Generated Light & Dark mode splash-screen styled OG images and PWA assets.')

@@ -49,7 +49,22 @@ export default defineConfig(function () { return __awaiter(void 0, void 0, void 
                     tailwindcss(),
                     VitePWA({
                         registerType: 'autoUpdate',
-                        includeAssets: ['favicon.svg', 'icon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'og-image.png', 'robots.txt'],
+                        includeAssets: [
+                            'favicon.svg',
+                            'icon.svg',
+                            'icon-light.svg',
+                            'icon-dark.svg',
+                            'apple-touch-icon.png',
+                            'apple-touch-icon-dark.png',
+                            'pwa-192x192.png',
+                            'pwa-192x192-dark.png',
+                            'pwa-512x512.png',
+                            'pwa-512x512-dark.png',
+                            'og-image.png',
+                            'og-image-light.png',
+                            'og-image-dark.png',
+                            'robots.txt',
+                        ],
                         manifest: {
                             name: 'Maina Voice — AI Voice Transcription & Benchmarking',
                             short_name: 'MainaVoice',

@@ -5,7 +5,7 @@
       --card: #f4efe4;
       --fg: #1e1e1e;
       --border: #d2cbbb;
-      --accent: #2e2e2e;
+      --primary: #2e2e2e;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -13,33 +13,29 @@
         --card: #1c1c1c;
         --fg: #e8e3da;
         --border: #2c2c2c;
-        --accent: #d1cfc0;
+        --primary: #d1cfc0;
       }
     }
   </style>
 
-  <!-- Background rounded rectangle -->
+  <!-- Background container -->
   <rect width="512" height="512" rx="112" fill="var(--bg)" />
   
-  <!-- Outer card ring with border -->
-  <rect x="40" y="40" width="432" height="432" rx="80" fill="var(--card)" stroke="var(--border)" stroke-width="6" />
+  <!-- Outer card with border -->
+  <rect x="40" y="40" width="432" height="432" rx="80" fill="var(--card)" stroke="var(--border)" stroke-width="8" />
 
-  <!-- Center Microphone Icon matching Splash Screen -->
-  <g transform="translate(256, 225)">
-    <!-- Mic capsule -->
-    <rect x="-38" y="-65" width="76" height="126" rx="38" fill="var(--fg)" />
-    <!-- Stand arc -->
-    <path d="M -64 10 A 64 64 0 0 0 64 10" fill="none" stroke="var(--fg)" stroke-width="16" stroke-linecap="round" />
-    <!-- Vertical stem -->
-    <line x1="0" y1="74" x2="0" y2="112" stroke="var(--fg)" stroke-width="16" stroke-linecap="round" />
-    <!-- Base line -->
-    <line x1="-38" y1="112" x2="38" y2="112" stroke="var(--fg)" stroke-width="16" stroke-linecap="round" />
+  <!-- Native Lucide Mic Icon (scaled to fit, exact geometry from splash-screen.vue) -->
+  <g transform="translate(256, 215) scale(13.5)">
+    <rect x="-3" y="-10" width="6" height="11" rx="3" fill="var(--fg)" />
+    <path d="M -7 -1 A 7 7 0 0 0 7 -1" fill="none" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="0" y1="6" x2="0" y2="10" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="-4" y1="10" x2="4" y2="10" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round" />
   </g>
 
   <!-- Loading pulse dots matching Splash Screen -->
-  <g transform="translate(256, 405)">
-    <circle cx="-42" cy="0" r="10" fill="var(--accent)" />
-    <circle cx="0" cy="0" r="13" fill="var(--accent)" />
-    <circle cx="42" cy="0" r="10" fill="var(--accent)" />
+  <g transform="translate(256, 400)">
+    <circle cx="-42" cy="0" r="10" fill="var(--primary)" />
+    <circle cx="0" cy="0" r="13" fill="var(--primary)" />
+    <circle cx="42" cy="0" r="10" fill="var(--primary)" />
   </g>
 </svg>

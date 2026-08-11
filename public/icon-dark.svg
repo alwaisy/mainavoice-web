@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Dark Theme: background #141414, card #1c1c1c, border #2c2c2c, foreground #e8e3da, primary #d1cfc0 -->
+  <rect width="512" height="512" rx="112" fill="#141414" />
+  <rect x="40" y="40" width="432" height="432" rx="80" fill="#1c1c1c" stroke="#2c2c2c" stroke-width="8" />
+
+  <g transform="translate(256, 215) scale(13.5)">
+    <rect x="-3" y="-10" width="6" height="11" rx="3" fill="#e8e3da" />
+    <path d="M -7 -1 A 7 7 0 0 0 7 -1" fill="none" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="0" y1="6" x2="0" y2="10" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="-4" y1="10" x2="4" y2="10" stroke="#e8e3da" stroke-width="1.8" stroke-linecap="round" />
+  </g>
+
+  <g transform="translate(256, 400)">
+    <circle cx="-42" cy="0" r="10" fill="#d1cfc0" />
+    <circle cx="0" cy="0" r="13" fill="#d1cfc0" />
+    <circle cx="42" cy="0" r="10" fill="#d1cfc0" />
+  </g>
+</svg>
