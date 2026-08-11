@@ -103,7 +103,7 @@ async function handleFactoryReset() {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
+  <div class="max-w-[714px] mx-auto space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Unboxed Page Title Header -->
     <div class="space-y-1">
       <h1 class="text-xl font-bold text-foreground tracking-tight">
