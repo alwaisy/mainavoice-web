@@ -33,39 +33,72 @@ export interface RecordingHistoryItem {
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 
+function getLocalBool(key: string, fallback: boolean): boolean {
+  if (typeof window === 'undefined')
+    return fallback
+  const val = window.localStorage.getItem(key)
+  if (val === 'true')
+    return true
+  if (val === 'false')
+    return false
+  return fallback
+}
+
+function getLocalStr(key: string, fallback: string): string {
+  if (typeof window === 'undefined')
+    return fallback
+  return window.localStorage.getItem(key) ?? fallback
+}
+
 export const useMainaStore = defineStore('maina-store', () => {
-  const openRouterApiKey = ref<string>('')
-  const selectedModel = ref<string>('fish-audio/transcribe-1')
-  const themeMode = ref<ThemeMode>('light')
+  const openRouterApiKey = ref<string>(getLocalStr('openRouterApiKey', ''))
+  const selectedModel = ref<string>(getLocalStr('selectedModel', 'fish-audio/transcribe-1'))
+  const themeMode = ref<ThemeMode>(getLocalStr('themeMode', 'light') as ThemeMode)
   const history = ref<RecordingHistoryItem[]>([])
   const isInitialized = ref(false)
 
-  const autoTranslateRecord = ref<boolean>(false)
-  const autoTranslateCompare = ref<boolean>(false)
-  const autoTranslateHistory = ref<boolean>(false)
+  const autoTranslateRecord = ref<boolean>(getLocalBool('autoTranslateRecord', false))
+  const autoTranslateCompare = ref<boolean>(getLocalBool('autoTranslateCompare', false))
+  const autoTranslateHistory = ref<boolean>(getLocalBool('autoTranslateHistory', false))
 
-  // Watchers to guarantee 100% automatic IndexedDB persistence whenever settings change
+  // Instant Theme Application
+  applyTheme(themeMode.value)
+
+  // Watchers for dual persistence (localStorage + IndexedDB)
   watch(openRouterApiKey, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('openRouterApiKey', val)
     if (isInitialized.value)
       dbSetSetting('openRouterApiKey', val)
   })
   watch(selectedModel, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('selectedModel', val)
     if (isInitialized.value)
       dbSetSetting('selectedModel', val)
   })
   watch(themeMode, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('themeMode', val)
     if (isInitialized.value)
       dbSetSetting('themeMode', val)
+    applyTheme(val)
   })
   watch(autoTranslateRecord, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('autoTranslateRecord', String(val))
     if (isInitialized.value)
       dbSetSetting('autoTranslateRecord', val)
   })
   watch(autoTranslateCompare, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('autoTranslateCompare', String(val))
     if (isInitialized.value)
       dbSetSetting('autoTranslateCompare', val)
   })
   watch(autoTranslateHistory, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('autoTranslateHistory', String(val))
     if (isInitialized.value)
       dbSetSetting('autoTranslateHistory', val)
   })
@@ -86,13 +119,24 @@ export const useMainaStore = defineStore('maina-store', () => {
       const histTrans = await dbGetSetting<boolean>('autoTranslateHistory')
       const items = await dbGetAllRecordings()
 
-      openRouterApiKey.value = key || ''
-      themeMode.value = theme || 'light'
-      selectedModel.value = model || 'fish-audio/transcribe-1'
+      if (key !== undefined)
+        openRouterApiKey.value = key
+      if (theme !== undefined)
+        themeMode.value = theme
+      if (model !== undefined)
+        selectedModel.value = model
 
-      autoTranslateRecord.value = recTrans ?? legacyTrans ?? false
-      autoTranslateCompare.value = compTrans ?? legacyTrans ?? false
-      autoTranslateHistory.value = histTrans ?? legacyTrans ?? false
+      const recVal = recTrans ?? legacyTrans
+      if (recVal !== undefined)
+        autoTranslateRecord.value = recVal
+
+      const compVal = compTrans ?? legacyTrans
+      if (compVal !== undefined)
+        autoTranslateCompare.value = compVal
+
+      const histVal = histTrans ?? legacyTrans
+      if (histVal !== undefined)
+        autoTranslateHistory.value = histVal
 
       history.value = items
 
