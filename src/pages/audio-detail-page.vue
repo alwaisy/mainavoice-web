@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
+import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
 import type { RecordingHistoryItem, TranscriptionVersion } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
 import { AlertCircle, ArrowLeft, Check, Copy, Download, Pause, Play, RefreshCw, Swords, Trash2, Trophy, Zap } from 'lucide-vue-next'
@@ -246,7 +247,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="item" class="space-y-6 animate-in fade-in duration-300">
+  <div v-if="item" class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Unboxed Navigation Header -->
     <div class="flex items-center justify-between">
       <Button
@@ -421,7 +422,7 @@ onUnmounted(() => {
                 </span>
 
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-secondary text-secondary-foreground border border-border">
-                  {{ ver.wordCount }}w
+                  {{ ver.wordCount }} words
                 </span>
 
                 <!-- Copy Button -->
@@ -429,7 +430,7 @@ onUnmounted(() => {
                   variant="outline"
                   size="sm"
                   class="h-6 text-[10px] font-semibold cursor-pointer border-border px-2"
-                  @click="copyText(cardActiveTabs[vIdx] === 'english' && ver.translatedText ? ver.translatedText : ver.text, vIdx)"
+                  @click="copyText(cardActiveTabs[vIdx] === 'english' && ver.translatedText ? ver.translatedText : autoTransliterateIfUrduRegion(ver.text), vIdx)"
                 >
                   <Check v-if="copiedCardIndex === vIdx" class="w-3 h-3 text-green-600 mr-1" />
                   <Copy v-else class="w-3 h-3 mr-1" />
@@ -454,7 +455,7 @@ onUnmounted(() => {
               {{ ver.translatedText }}
             </p>
             <p v-else class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-3.5 rounded-xl bg-muted/40 border border-border min-h-[120px]">
-              {{ ver.text }}
+              {{ autoTransliterateIfUrduRegion(ver.text) }}
             </p>
           </div>
         </div>
@@ -583,7 +584,7 @@ onUnmounted(() => {
               variant="outline"
               size="sm"
               class="font-semibold cursor-pointer h-8 text-xs border-border"
-              @click="copyText(activeTab === 'english' && activeVersion.translatedText ? activeVersion.translatedText : activeVersion.text)"
+              @click="copyText(activeTab === 'english' && activeVersion.translatedText ? activeVersion.translatedText : autoTransliterateIfUrduRegion(activeVersion.text))"
             >
               <Check v-if="copiedId" class="w-3.5 h-3.5 text-green-600 mr-1" />
               <Copy v-else class="w-3.5 h-3.5 mr-1" />
@@ -624,7 +625,7 @@ onUnmounted(() => {
             {{ activeVersion.translatedText }}
           </p>
           <p v-else class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-4 rounded-xl bg-muted/40 border border-border min-h-[140px]">
-            {{ activeVersion.text }}
+            {{ autoTransliterateIfUrduRegion(activeVersion.text) }}
           </p>
         </div>
       </div>

@@ -330,8 +330,12 @@ export const useMainaStore = defineStore('maina-store', () => {
   function formatDuration(ms: number): string {
     if (ms < 1000)
       return `${ms}ms`
-    const sec = (ms / 1000).toFixed(1)
-    return `${sec}s`
+    const totalSec = ms / 1000
+    if (totalSec < 60)
+      return `${totalSec.toFixed(1)}s`
+    const mins = Math.floor(totalSec / 60)
+    const secs = Math.round(totalSec % 60)
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`
   }
 
   // Auto initialize

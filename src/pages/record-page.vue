@@ -6,6 +6,7 @@ import ModelInfoModal from '@/components/model-info-modal.vue'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
+import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
 import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
@@ -249,7 +250,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in duration-300">
+  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Hidden HTML File Input for Audio Upload -->
     <input
       ref="fileInputRef"
@@ -490,7 +491,7 @@ onUnmounted(() => {
           {{ activeResult.translatedText }}
         </p>
         <p v-else class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-4 rounded-xl bg-muted/40 border border-border min-h-[100px]">
-          {{ activeResult.text }}
+          {{ autoTransliterateIfUrduRegion(activeResult.text) }}
         </p>
       </div>
 

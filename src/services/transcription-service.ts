@@ -1,4 +1,5 @@
 import type { TranscriptionVersion } from '@/stores/maina-store'
+import { autoTransliterateIfUrduRegion } from './transliteration-service'
 
 export interface ModelInfo {
   id: string
@@ -12,16 +13,6 @@ export interface ModelInfo {
 }
 
 export const ALL_MODELS: ModelInfo[] = [
-  {
-    id: 'qwen/qwen3.7-flash',
-    name: 'Qwen 3.7 Flash (Multimodal LLM)',
-    provider: 'Alibaba',
-    costPerMin: 0.0001,
-    latencyGrade: 'ultra-fast',
-    accuracyGrade: 'state-of-the-art',
-    description: 'Multimodal Audio LLM with region-aware single-pass transcript + translation.',
-    badge: 'Single-Pass Dual Output',
-  },
   {
     id: 'openai/gpt-transcribe',
     name: 'OpenAI GPT-Transcribe',
@@ -63,21 +54,12 @@ export const ALL_MODELS: ModelInfo[] = [
 ]
 
 const PRICE_PER_MIN: Record<string, number> = {
-  'qwen/qwen3.7-flash': 0.0001,
   'openai/gpt-transcribe': 0.0045,
   'deepgram/nova-3': 0.0043,
   'nvidia/parakeet-tdt-0.6b-v3': 0.0035,
   'fish-audio/transcribe-1': 0.0038,
 }
 
-function blobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onloadend = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(blob)
-  })
-}
 
 export async function transcribeAudio(
   audioFilePath: string,
@@ -111,88 +93,7 @@ export async function transcribeAudio(
       audioBlob = await res.blob()
     }
 
-    // =========================================================================
-    // PATH A: Qwen 3.7 Flash Multimodal LLM (Single-Pass Audio + Context)
-    // =========================================================================
-    if (modelId.startsWith('qwen/')) {
-      const base64Audio = await blobToBase64(audioBlob)
-      const userLocale = typeof navigator !== 'undefined' ? navigator.language : 'en-US'
-      const userTimezone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC'
-
-      const systemPrompt = `You are a world-class global speech recognition LLM. Listen to the audio clip carefully.
-User's runtime context:
-- Locale: ${userLocale}
-- Timezone/Region: ${userTimezone}
-
-Rules:
-1. Transcribe the spoken audio with 100% verbatim fidelity into the exact script style natively used by everyday speakers in that region (e.g. Roman Urdu/Hinglish in Latin script for Hindustani in South Asia/Diaspora, or native script). Keep English tech terms in English.
-2. Provide a fluent English translation.
-3. Respond ONLY with a valid JSON object: { "text": "<verbatim_transcript>", "translatedText": "<english_translation>" }`
-
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://mainavoice.app',
-          'X-Title': 'Maina Voice Web App',
-        },
-        body: JSON.stringify({
-          model: modelId,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'input_audio',
-                  input_audio: {
-                    data: base64Audio.split(',')[1] || base64Audio,
-                    format: 'wav',
-                  },
-                },
-              ],
-            },
-          ],
-          response_format: { type: 'json_object' },
-        }),
-      })
-
-      if (!response.ok) {
-        const errText = await response.text()
-        throw new Error(`OpenRouter HTTP ${response.status}: ${errText}`)
-      }
-
-      const json = await response.json()
-      const rawContent = json.choices?.[0]?.message?.content || '{}'
-      let parsed = { text: '', translatedText: '' }
-      try {
-        parsed = JSON.parse(rawContent)
-      }
-      catch {
-        parsed.text = rawContent
-      }
-
-      const textOutput = parsed.text || 'Transcription completed, but no text output was returned.'
-      const latencyMs = Date.now() - startTime
-      const wordCount = textOutput.trim().split(/\s+/).filter(Boolean).length
-      const costEstimate = 0.0001
-
-      return {
-        versionNumber: 1,
-        engineName: modelId,
-        text: textOutput,
-        translatedText: parsed.translatedText || undefined,
-        latencyMs,
-        wordCount,
-        costEstimate,
-        timestamp: new Date().toISOString(),
-      }
-    }
-
-    // =========================================================================
-    // PATH B: Standard Dedicated STT Models (Whisper / Deepgram / Parakeet)
-    // =========================================================================
+    // Standard Dedicated STT Models (Whisper / Deepgram / Parakeet / Fish Audio)
     const form = new FormData()
     form.append('file', audioBlob, 'recording.wav')
     form.append('model', modelId)
@@ -221,7 +122,11 @@ Rules:
     }
 
     const json = await response.json()
-    const textOutput = json.text || json.transcript || json.choices?.[0]?.message?.content || 'Transcription completed, but no text output was returned.'
+    let textOutput = json.text || json.transcript || json.choices?.[0]?.message?.content || 'Transcription completed, but no text output was returned.'
+    
+    // Auto-transliterate Devanagari Hindi -> Perso-Arabic Urdu if user is in Pakistan / Urdu region
+    textOutput = autoTransliterateIfUrduRegion(textOutput)
+
     const latencyMs = Date.now() - startTime
     const wordCount = textOutput.trim().split(/\s+/).filter(Boolean).length
     const costEstimate = (durationSeconds / 60) * (PRICE_PER_MIN[modelId] || 0.0045)

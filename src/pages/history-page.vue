@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
+import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
 import type { RecordingHistoryItem } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
 import { ExternalLink, Pause, Play, Search, Swords, Trash2, Trophy, Zap } from 'lucide-vue-next'
@@ -88,7 +89,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in duration-300">
+  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Search Bar & Clear All -->
     <div class="flex items-center justify-between gap-4">
       <div class="relative flex-1">
@@ -162,14 +163,14 @@ onUnmounted(() => {
               </div>
               <div class="flex items-center gap-2 shrink-0 text-[11px] text-muted-foreground font-mono">
                 <span>⚡ {{ store.formatDuration(ver.latencyMs) }}</span>
-                <span>{{ ver.wordCount }}w</span>
+                <span>{{ ver.wordCount }} words</span>
               </div>
             </div>
           </div>
 
           <!-- Winner Transcript Preview -->
           <p v-if="item.versions[item.activeVersionIndex]" class="text-xs text-foreground/90 line-clamp-2 leading-relaxed font-normal italic bg-background p-3 rounded-lg border border-border">
-            "{{ item.versions[item.activeVersionIndex]!.text }}"
+            "{{ autoTransliterateIfUrduRegion(item.versions[item.activeVersionIndex]!.text) }}"
           </p>
 
           <!-- Card Actions -->
@@ -232,7 +233,7 @@ onUnmounted(() => {
 
           <!-- Transcript Preview -->
           <p v-if="item.versions[item.activeVersionIndex]" class="text-xs text-foreground/90 line-clamp-2 leading-relaxed font-normal">
-            {{ item.versions[item.activeVersionIndex]!.text }}
+            {{ autoTransliterateIfUrduRegion(item.versions[item.activeVersionIndex]!.text) }}
           </p>
 
           <!-- Card Actions -->

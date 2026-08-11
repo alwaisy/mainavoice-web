@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
+import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
 import type { TranscriptionVersion } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
 import { AlertCircle, Check, Copy, Mic, Square, Trophy, Upload, Zap } from 'lucide-vue-next'
@@ -10,15 +11,15 @@ import { computed, onUnmounted, ref } from 'vue'
 const store = useMainaStore()
 
 // Model slots count (2, 3, 4, or 5)
-const modelCount = ref<2 | 3 | 4 | 5>(5)
+const modelCount = ref<2 | 3 | 4>(4)
 
 // Selected models for up to 5 comparison workbenches
 const selectedModels = ref<string[]>([
-  'qwen/qwen3.7-flash',
   'openai/gpt-transcribe',
   'deepgram/nova-3',
   'nvidia/parakeet-tdt-0.6b-v3',
   'fish-audio/transcribe-1',
+  'openai/gpt-transcribe',
 ])
 
 // Results array for up to 5 models
@@ -230,7 +231,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in duration-300">
+  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Hidden File Input -->
     <input
       ref="fileInputRef"
@@ -273,14 +274,7 @@ onUnmounted(() => {
         >
           4 Models
         </Button>
-        <Button
-          size="sm"
-          :variant="modelCount === 5 ? 'default' : 'ghost'"
-          class="h-7 text-xs font-bold px-3 cursor-pointer"
-          @click="modelCount = 5"
-        >
-          5 Models
-        </Button>
+
       </div>
     </div>
 
@@ -420,7 +414,7 @@ onUnmounted(() => {
                   variant="outline"
                   size="sm"
                   class="h-6 text-[10px] font-semibold cursor-pointer border-border px-2"
-                  @click="copyText(activeTabs[index - 1] === 'english' && results[index - 1]?.translatedText ? (results[index - 1]?.translatedText || '') : (results[index - 1]?.text || ''), index - 1)"
+                  @click="copyText(activeTabs[index - 1] === 'english' && results[index - 1]?.translatedText ? (results[index - 1]?.translatedText || '') : autoTransliterateIfUrduRegion(results[index - 1]?.text || ''), index - 1)"
                 >
                   <Check v-if="copiedStates[index - 1]" class="w-3 h-3 text-green-600 mr-1" />
                   <Copy v-else class="w-3 h-3 mr-1" />
@@ -445,7 +439,7 @@ onUnmounted(() => {
               {{ results[index - 1]!.translatedText }}
             </p>
             <p v-else class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-3.5 rounded-xl bg-muted/40 border border-border min-h-[120px]">
-              {{ results[index - 1]!.text }}
+              {{ autoTransliterateIfUrduRegion(results[index - 1]!.text) }}
             </p>
           </div>
 
