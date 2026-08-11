@@ -89,10 +89,10 @@ export async function importBackupArchive(file: File): Promise<{ recordingsCount
   let recordings: any[] = []
   let settingsMap: Record<string, any> = {}
 
-  // 1. Read Transcriptions (transcriptions.json)
-  const transcriptionsFile = zipContent.file('transcriptions.json')
+  // 1. Read Transcriptions (try transcriptions.json first, fallback to metadata.json)
+  const transcriptionsFile = zipContent.file('transcriptions.json') || zipContent.file('metadata.json')
   if (!transcriptionsFile) {
-    throw new Error('Invalid backup file: transcriptions.json is missing.')
+    throw new Error('Invalid backup file: transcriptions.json or metadata.json is missing.')
   }
 
   const transcriptionsText = await transcriptionsFile.async('text')
@@ -102,24 +102,35 @@ export async function importBackupArchive(file: File): Promise<{ recordingsCount
     recordings = parsedTranscriptions.recordings
   }
 
-  // 2. Read Settings (settings.json)
-  const settingsFile = zipContent.file('settings.json')
-  if (!settingsFile) {
-    throw new Error('Invalid backup file: settings.json is missing.')
-  }
-
-  const settingsText = await settingsFile.async('text')
-  const parsedSettings = JSON.parse(settingsText)
-
-  if (parsedSettings.settings && typeof parsedSettings.settings === 'object') {
-    if (Array.isArray(parsedSettings.settings)) {
-      for (const item of parsedSettings.settings) {
+  // If metadata.json has legacy settings array/object
+  if (parsedTranscriptions.settings) {
+    if (Array.isArray(parsedTranscriptions.settings)) {
+      for (const item of parsedTranscriptions.settings) {
         if (item.key)
           settingsMap[item.key] = item.value
       }
     }
-    else {
-      settingsMap = parsedSettings.settings
+    else if (typeof parsedTranscriptions.settings === 'object') {
+      settingsMap = { ...parsedTranscriptions.settings }
+    }
+  }
+
+  // 2. Read Settings (from settings.json if present)
+  const settingsFile = zipContent.file('settings.json')
+  if (settingsFile) {
+    const settingsText = await settingsFile.async('text')
+    const parsedSettings = JSON.parse(settingsText)
+
+    if (parsedSettings.settings && typeof parsedSettings.settings === 'object') {
+      if (Array.isArray(parsedSettings.settings)) {
+        for (const item of parsedSettings.settings) {
+          if (item.key)
+            settingsMap[item.key] = item.value
+        }
+      }
+      else {
+        settingsMap = { ...settingsMap, ...parsedSettings.settings }
+      }
     }
   }
 
