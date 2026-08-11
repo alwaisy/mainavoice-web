@@ -1,8 +1,11 @@
 import { createPinia } from 'pinia'
+import { registerSW } from 'virtual:pwa-register'
 import { createApp } from 'vue'
 import App from './app.vue'
 import router from './router'
 import './assets/css/base.css'
+
+registerSW({ immediate: true })
 
 // ─── Apply theme BEFORE Vue mounts to prevent flash ───────────────────────────
 // Reads maina_theme_mode from localStorage immediately on script parse.
