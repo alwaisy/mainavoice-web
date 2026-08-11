@@ -146,7 +146,7 @@ export async function exportBackupArchive(): Promise<void> {
         if (loc) {
           const parts = loc.split('-')
           if (parts.length > 1) {
-            const region = parts[parts.length - 1].toUpperCase()
+            const region = (parts[parts.length - 1] ?? '').toUpperCase()
             if (region.length === 2 && /^[A-Z]{2}$/.test(region)) {
               countryCode = region
               break
