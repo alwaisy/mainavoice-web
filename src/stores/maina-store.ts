@@ -31,8 +31,6 @@ export interface RecordingHistoryItem {
   isComparisonSuite?: boolean
 }
 
-export type ThemeMode = 'light' | 'dark' | 'system'
-
 function getLocalBool(key: string, fallback: boolean): boolean {
   if (typeof window === 'undefined')
     return fallback
@@ -47,7 +45,8 @@ function getLocalBool(key: string, fallback: boolean): boolean {
 function getLocalStr(key: string, fallback: string): string {
   if (typeof window === 'undefined')
     return fallback
-  return window.localStorage.getItem(key) ?? fallback
+  const val = window.localStorage.getItem(key)
+  return val ?? fallback
 }
 
 export const useMainaStore = defineStore('maina-store', () => {
@@ -66,38 +65,32 @@ export const useMainaStore = defineStore('maina-store', () => {
 
   // Watchers for dual persistence (localStorage + IndexedDB)
   watch(openRouterApiKey, (val) => {
-    console.log('[MainaStore] API Key changed:', val ? '(set)' : '(empty)')
     if (typeof window !== 'undefined')
       window.localStorage.setItem('openRouterApiKey', val)
     dbSetSetting('openRouterApiKey', val)
   })
   watch(selectedModel, (val) => {
-    console.log('[MainaStore] Selected Model changed:', val)
     if (typeof window !== 'undefined')
       window.localStorage.setItem('selectedModel', val)
     dbSetSetting('selectedModel', val)
   })
   watch(themeMode, (val) => {
-    console.log('[MainaStore] Theme Mode changed:', val)
     if (typeof window !== 'undefined')
       window.localStorage.setItem('themeMode', val)
     dbSetSetting('themeMode', val)
     applyTheme(val)
   })
   watch(autoTranslateRecord, (val) => {
-    console.log('[MainaStore] autoTranslateRecord changed:', val)
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateRecord', String(val))
     dbSetSetting('autoTranslateRecord', val)
   })
   watch(autoTranslateCompare, (val) => {
-    console.log('[MainaStore] autoTranslateCompare changed:', val)
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateCompare', String(val))
     dbSetSetting('autoTranslateCompare', val)
   })
   watch(autoTranslateHistory, (val) => {
-    console.log('[MainaStore] autoTranslateHistory changed:', val)
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateHistory', String(val))
     dbSetSetting('autoTranslateHistory', val)
@@ -117,8 +110,6 @@ export const useMainaStore = defineStore('maina-store', () => {
       const compTrans = await dbGetSetting<boolean>('autoTranslateCompare')
       const histTrans = await dbGetSetting<boolean>('autoTranslateHistory')
       const items = await dbGetAllRecordings()
-
-      console.log('[MainaStore] Loaded settings from IndexedDB:', { key: !!key, theme, model, recTrans, compTrans, histTrans })
 
       if (key !== undefined && key !== '') {
         openRouterApiKey.value = key

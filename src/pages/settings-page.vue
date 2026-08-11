@@ -194,8 +194,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateRecord"
-            @update:checked="(val: boolean) => store.setAutoTranslateRecord(val)"
+            :model-value="store.autoTranslateRecord"
+            @update:model-value="(val: boolean) => store.setAutoTranslateRecord(val)"
           />
         </div>
 
@@ -210,8 +210,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateCompare"
-            @update:checked="(val: boolean) => store.setAutoTranslateCompare(val)"
+            :model-value="store.autoTranslateCompare"
+            @update:model-value="(val: boolean) => store.setAutoTranslateCompare(val)"
           />
         </div>
 
@@ -226,8 +226,8 @@ async function handleFactoryReset() {
             </p>
           </div>
           <Switch
-            :checked="store.autoTranslateHistory"
-            @update:checked="(val: boolean) => store.setAutoTranslateHistory(val)"
+            :model-value="store.autoTranslateHistory"
+            @update:model-value="(val: boolean) => store.setAutoTranslateHistory(val)"
           />
         </div>
       </div>
