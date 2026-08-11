@@ -68,39 +68,33 @@ export const useMainaStore = defineStore('maina-store', () => {
   watch(openRouterApiKey, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('openRouterApiKey', val)
-    if (isInitialized.value)
-      dbSetSetting('openRouterApiKey', val)
+    dbSetSetting('openRouterApiKey', val)
   })
   watch(selectedModel, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('selectedModel', val)
-    if (isInitialized.value)
-      dbSetSetting('selectedModel', val)
+    dbSetSetting('selectedModel', val)
   })
   watch(themeMode, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('themeMode', val)
-    if (isInitialized.value)
-      dbSetSetting('themeMode', val)
+    dbSetSetting('themeMode', val)
     applyTheme(val)
   })
   watch(autoTranslateRecord, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateRecord', String(val))
-    if (isInitialized.value)
-      dbSetSetting('autoTranslateRecord', val)
+    dbSetSetting('autoTranslateRecord', val)
   })
   watch(autoTranslateCompare, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateCompare', String(val))
-    if (isInitialized.value)
-      dbSetSetting('autoTranslateCompare', val)
+    dbSetSetting('autoTranslateCompare', val)
   })
   watch(autoTranslateHistory, (val) => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('autoTranslateHistory', String(val))
-    if (isInitialized.value)
-      dbSetSetting('autoTranslateHistory', val)
+    dbSetSetting('autoTranslateHistory', val)
   })
 
   // Initialization function called on app load
@@ -113,30 +107,42 @@ export const useMainaStore = defineStore('maina-store', () => {
       const theme = await dbGetSetting<ThemeMode>('themeMode')
       const model = await dbGetSetting<string>('selectedModel')
 
-      const legacyTrans = await dbGetSetting<boolean>('autoTranslate')
       const recTrans = await dbGetSetting<boolean>('autoTranslateRecord')
       const compTrans = await dbGetSetting<boolean>('autoTranslateCompare')
       const histTrans = await dbGetSetting<boolean>('autoTranslateHistory')
       const items = await dbGetAllRecordings()
 
-      if (key !== undefined)
+      if (key !== undefined && key !== '') {
         openRouterApiKey.value = key
-      if (theme !== undefined)
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('openRouterApiKey', key)
+      }
+      if (theme !== undefined) {
         themeMode.value = theme
-      if (model !== undefined)
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('themeMode', theme)
+      }
+      if (model !== undefined) {
         selectedModel.value = model
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('selectedModel', model)
+      }
 
-      const recVal = recTrans ?? legacyTrans
-      if (recVal !== undefined)
-        autoTranslateRecord.value = recVal
-
-      const compVal = compTrans ?? legacyTrans
-      if (compVal !== undefined)
-        autoTranslateCompare.value = compVal
-
-      const histVal = histTrans ?? legacyTrans
-      if (histVal !== undefined)
-        autoTranslateHistory.value = histVal
+      if (recTrans !== undefined) {
+        autoTranslateRecord.value = recTrans
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('autoTranslateRecord', String(recTrans))
+      }
+      if (compTrans !== undefined) {
+        autoTranslateCompare.value = compTrans
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('autoTranslateCompare', String(compTrans))
+      }
+      if (histTrans !== undefined) {
+        autoTranslateHistory.value = histTrans
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('autoTranslateHistory', String(histTrans))
+      }
 
       history.value = items
 
