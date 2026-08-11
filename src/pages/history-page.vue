@@ -91,7 +91,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
+  <div class="max-w-[714px] mx-auto space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
     <!-- Search Bar & Clear All -->
     <div class="flex items-center justify-between gap-4">
       <div class="relative flex-1">
