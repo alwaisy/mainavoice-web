@@ -61,6 +61,67 @@ const PRICE_PER_MIN: Record<string, number> = {
 }
 
 
+async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
+  try {
+    const arrayBuffer = await blob.arrayBuffer()
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
+    if (!AudioCtx) return blob
+    const audioContext = new AudioCtx()
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+    const sampleRate = audioBuffer.sampleRate
+    const numChannels = audioBuffer.numberOfChannels
+
+    let channelData: Float32Array
+    if (numChannels === 1) {
+      channelData = audioBuffer.getChannelData(0)
+    } else {
+      const left = audioBuffer.getChannelData(0)
+      const right = audioBuffer.getChannelData(1)
+      channelData = new Float32Array(left.length)
+      for (let i = 0; i < left.length; i++) {
+        channelData[i] = 0.5 * ((left[i] ?? 0) + (right[i] ?? 0))
+      }
+    }
+
+    const wavBuffer = new ArrayBuffer(44 + channelData.length * 2)
+    const view = new DataView(wavBuffer)
+
+    const writeString = (offset: number, str: string) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i))
+      }
+    }
+
+    writeString(0, 'RIFF')
+    view.setUint32(4, 36 + channelData.length * 2, true)
+    writeString(8, 'WAVE')
+    writeString(12, 'fmt ')
+    view.setUint32(16, 16, true) // Subchunk1Size
+    view.setUint16(20, 1, true)  // AudioFormat (PCM)
+    view.setUint16(22, 1, true)  // NumChannels (1 = Mono)
+    view.setUint32(24, sampleRate, true) // SampleRate
+    view.setUint32(28, sampleRate * 2, true) // ByteRate
+    view.setUint16(32, 2, true)  // BlockAlign
+    view.setUint16(34, 16, true) // BitsPerSample
+    writeString(36, 'data')
+    view.setUint32(40, channelData.length * 2, true)
+
+    let offset = 44
+    for (let i = 0; i < channelData.length; i++, offset += 2) {
+      const val = channelData[i] ?? 0
+      const s = Math.max(-1, Math.min(1, val))
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+    }
+
+    await audioContext.close()
+    return new Blob([wavBuffer], { type: 'audio/wav' })
+  } catch (e) {
+    console.warn('WAV conversion fallback to original blob:', e)
+    return blob
+  }
+}
+
 export async function transcribeAudio(
   audioFilePath: string,
   modelId: string,
@@ -93,7 +154,9 @@ export async function transcribeAudio(
       audioBlob = await res.blob()
     }
 
-    // Standard Dedicated STT Models (Whisper / Deepgram / Parakeet / Fish Audio)
+    // Convert any browser recording (WebM/Ogg/etc.) to a clean 16-bit PCM WAV blob for 100% provider compatibility
+    audioBlob = await audioBlobToWavBlob(audioBlob)
+
     const form = new FormData()
     form.append('file', audioBlob, 'recording.wav')
     form.append('model', modelId)
