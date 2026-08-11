@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { ALL_MODELS } from '@/services/transcription-service'
-import { X } from 'lucide-vue-next'
 
 defineProps<{
   isOpen: boolean
@@ -60,19 +60,12 @@ const emit = defineEmits<{
             </div>
 
             <p class="text-xs font-semibold text-muted-foreground">
-              Price: <span class="text-foreground font-bold">{{ model.price }}</span>
+              Price: <span class="text-foreground font-bold">${{ model.costPerMin }}/min</span>
             </p>
 
-            <ul class="space-y-1.5 pt-1 text-xs text-foreground font-normal">
-              <li
-                v-for="(point, idx) in model.points"
-                :key="idx"
-                class="flex items-start gap-2"
-              >
-                <span class="text-muted-foreground font-bold select-none">•</span>
-                <span>{{ point }}</span>
-              </li>
-            </ul>
+            <p class="text-xs text-foreground font-normal">
+              {{ model.description }}
+            </p>
           </div>
         </div>
 

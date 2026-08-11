@@ -19,7 +19,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  user-select: none;
+  user-select: auto;
   cursor: default;
   overflow-x: hidden;
   overflow-y: auto;

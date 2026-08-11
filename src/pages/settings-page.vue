@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { useMainaStore } from '@/stores/maina-store'
 import { Check, Key, Laptop, Moon, Sun } from 'lucide-vue-next'
 import { ref } from 'vue'
+import { Button } from '@/components/ui/button'
+import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const apiKeyInput = ref(store.openRouterApiKey)
@@ -73,7 +73,30 @@ function handleSaveKey() {
       </div>
     </div>
 
-    <!-- 2. OpenRouter API Key Card -->
+    <!-- 2. Auto-Translate Preference Card -->
+    <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
+      <div class="flex items-center justify-between gap-4">
+        <div class="space-y-1">
+          <h2 class="text-sm font-bold text-foreground">
+            Auto-Translate to English
+          </h2>
+          <p class="text-xs text-muted-foreground leading-relaxed">
+            Automatically generate and save fluent English translations for new recordings using Qwen 3.7 Flash ($0.03/1M tokens ultra-low cost translation model).
+          </p>
+        </div>
+
+        <Button
+          size="sm"
+          :variant="store.autoTranslate ? 'default' : 'outline'"
+          class="font-bold cursor-pointer shrink-0"
+          @click="store.setAutoTranslate(!store.autoTranslate)"
+        >
+          <span>{{ store.autoTranslate ? 'Enabled' : 'Disabled' }}</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- 3. OpenRouter API Key Card -->
     <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
       <div class="space-y-1">
         <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
@@ -129,7 +152,7 @@ function handleSaveKey() {
         Maina Voice v0.1.0 — Desktop AI Voice Dictation & Multi-Model Benchmarking Application
       </p>
       <p class="text-[10px] text-muted-foreground/70">
-        Powered by Tauri v2, Vue 3, and OpenRouter AI APIs.
+        Powered by Vue 3, Vite, and OpenRouter AI APIs.
       </p>
     </div>
   </div>

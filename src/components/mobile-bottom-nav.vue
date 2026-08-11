@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
 import { History, Mic, Settings, Swords } from 'lucide-vue-next'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
+import { Button } from '@/components/ui/button'
 
 const route = useRoute()
-const router = useRouter()
 </script>
 
 <template>
@@ -13,46 +12,54 @@ const router = useRouter()
     <div class="grid grid-cols-4 items-center h-14 px-2">
       <!-- 1. Record Tab -->
       <Button
+        as-child
         variant="ghost"
-        class="flex flex-col items-center justify-center h-full py-1 gap-0.5 rounded-none cursor-pointer"
+        class="flex flex-col items-center justify-center h-full w-full py-1 gap-0.5 rounded-none cursor-pointer"
         :class="route.path === '/' ? 'text-primary font-bold' : 'text-muted-foreground font-medium'"
-        @click="router.push('/')"
       >
-        <Mic class="w-4 h-4" />
-        <span class="text-[10px] tracking-tight">Record</span>
+        <RouterLink to="/">
+          <Mic class="w-4 h-4" />
+          <span class="text-[10px] tracking-tight">Record</span>
+        </RouterLink>
       </Button>
 
       <!-- 2. Compare Tab -->
       <Button
+        as-child
         variant="ghost"
-        class="flex flex-col items-center justify-center h-full py-1 gap-0.5 rounded-none cursor-pointer"
+        class="flex flex-col items-center justify-center h-full w-full py-1 gap-0.5 rounded-none cursor-pointer"
         :class="route.path === '/compare' ? 'text-primary font-bold' : 'text-muted-foreground font-medium'"
-        @click="router.push('/compare')"
       >
-        <Swords class="w-4 h-4" />
-        <span class="text-[10px] tracking-tight">Compare</span>
+        <RouterLink to="/compare">
+          <Swords class="w-4 h-4" />
+          <span class="text-[10px] tracking-tight">Compare</span>
+        </RouterLink>
       </Button>
 
       <!-- 3. History Tab -->
       <Button
+        as-child
         variant="ghost"
-        class="flex flex-col items-center justify-center h-full py-1 gap-0.5 rounded-none cursor-pointer"
-        :class="route.path === '/history' ? 'text-primary font-bold' : 'text-muted-foreground font-medium'"
-        @click="router.push('/history')"
+        class="flex flex-col items-center justify-center h-full w-full py-1 gap-0.5 rounded-none cursor-pointer"
+        :class="route.path.startsWith('/history') ? 'text-primary font-bold' : 'text-muted-foreground font-medium'"
       >
-        <History class="w-4 h-4" />
-        <span class="text-[10px] tracking-tight">History</span>
+        <RouterLink to="/history">
+          <History class="w-4 h-4" />
+          <span class="text-[10px] tracking-tight">History</span>
+        </RouterLink>
       </Button>
 
       <!-- 4. Settings Tab -->
       <Button
+        as-child
         variant="ghost"
-        class="flex flex-col items-center justify-center h-full py-1 gap-0.5 rounded-none cursor-pointer"
+        class="flex flex-col items-center justify-center h-full w-full py-1 gap-0.5 rounded-none cursor-pointer"
         :class="route.path === '/settings' ? 'text-primary font-bold' : 'text-muted-foreground font-medium'"
-        @click="router.push('/settings')"
       >
-        <Settings class="w-4 h-4" />
-        <span class="text-[10px] tracking-tight">Settings</span>
+        <RouterLink to="/settings">
+          <Settings class="w-4 h-4" />
+          <span class="text-[10px] tracking-tight">Settings</span>
+        </RouterLink>
       </Button>
     </div>
   </nav>

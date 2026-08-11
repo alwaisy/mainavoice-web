@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { useMainaStore } from '@/stores/maina-store'
 import { Key, X } from 'lucide-vue-next'
 import { ref, watch } from 'vue'
+import { Button } from '@/components/ui/button'
+import { useMainaStore } from '@/stores/maina-store'
 
 const props = defineProps<{
   isOpen: boolean
@@ -18,7 +18,8 @@ const apiKeyInput = ref(store.openRouterApiKey)
 watch(
   () => props.isOpen,
   (val) => {
-    if (val) apiKeyInput.value = store.openRouterApiKey
+    if (val)
+      apiKeyInput.value = store.openRouterApiKey
   },
 )
 

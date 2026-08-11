@@ -1,5 +1,5 @@
+import { createRouter, createWebHistory } from 'vue-router'
 import MainaLayout from '@/layouts/maina-layout.vue'
-import { createMemoryHistory, createRouter } from 'vue-router'
 
 const routes = [
   {
@@ -40,7 +40,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 })
 

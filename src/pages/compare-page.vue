@@ -1,24 +1,51 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ALL_MODELS, transcribeAudio } from '@/services/transcription-service'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
 import type { TranscriptionVersion } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
-import { Check, Copy, Mic, Square, Trophy, Zap } from 'lucide-vue-next'
+import { AlertCircle, Check, Copy, Mic, Square, Trophy, Upload, Zap } from 'lucide-vue-next'
 import { computed, onUnmounted, ref } from 'vue'
 
 const store = useMainaStore()
+
+// Model slots count (2, 3, 4, or 5)
+const modelCount = ref<2 | 3 | 4 | 5>(5)
+
+// Selected models for up to 5 comparison workbenches
+const selectedModels = ref<string[]>([
+  'qwen/qwen3.7-flash',
+  'openai/gpt-transcribe',
+  'deepgram/nova-3',
+  'nvidia/parakeet-tdt-0.6b-v3',
+  'fish-audio/transcribe-1',
+])
+
+// Results array for up to 5 models
+const results = ref<(TranscriptionVersion | null)[]>([null, null, null, null, null])
+const copiedStates = ref<boolean[]>([false, false, false, false, false])
+const activeTabs = ref<('original' | 'english')[]>(['original', 'original', 'original', 'original', 'original'])
+const translatingSlots = ref<boolean[]>([false, false, false, false, false])
+
+async function translateSlot(index: number) {
+  const res = results.value[index]
+  if (!res || !res.text || translatingSlots.value[index]) return
+  translatingSlots.value[index] = true
+  try {
+    const translated = await translateToEnglish(res.text, store.openRouterApiKey)
+    res.translatedText = translated
+    activeTabs.value[index] = 'english'
+  }
+  finally {
+    translatingSlots.value[index] = false
+  }
+}
+
 const isRecording = ref(false)
 const isProcessing = ref(false)
 const recordSeconds = ref(0)
-
-const selectedModel1 = ref('openai/gpt-transcribe')
-const selectedModel2 = ref('deepgram/nova-3')
-
-const result1 = ref<TranscriptionVersion | null>(null)
-const result2 = ref<TranscriptionVersion | null>(null)
-const isCopied1 = ref(false)
-const isCopied2 = ref(false)
+const micError = ref<string | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 let timer: number | null = null
 let mediaRecorder: MediaRecorder | null = null
@@ -38,8 +65,6 @@ function stopTimer() {
   }
 }
 
-const micError = ref<string | null>(null)
-
 async function getMicrophoneStream() {
   try {
     return await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -54,15 +79,11 @@ async function getMicrophoneStream() {
         },
       })
     }
-    catch (e2) {
+    catch {
       throw e1
     }
   }
 }
-
-const isNativeTauri = ref(
-  typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window),
-)
 
 async function toggleBenchmarkRecording() {
   micError.value = null
@@ -71,119 +92,137 @@ async function toggleBenchmarkRecording() {
     isRecording.value = false
     isProcessing.value = true
 
-    if (isNativeTauri.value) {
-      try {
-        const { invoke } = await import('@tauri-apps/api/core')
-        const audioPath = (await invoke('stop_native_recording')) as string
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop()
+    }
+  }
+  else {
+    try {
+      const stream = await getMicrophoneStream()
+      audioChunks = []
+      mediaRecorder = new MediaRecorder(stream)
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0)
+          audioChunks.push(event.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+        const audioUrl = URL.createObjectURL(audioBlob)
         const duration = Math.max(recordSeconds.value, 1)
 
-        const promise1 = transcribeAudio(audioPath, selectedModel1.value, store.openRouterApiKey, duration)
-        const promise2 = transcribeAudio(audioPath, selectedModel2.value, store.openRouterApiKey, duration)
-
-        const [res1, res2] = await Promise.all([promise1, promise2])
-
-        result1.value = res1
-        result2.value = res2
-        isProcessing.value = false
-      }
-      catch (err: any) {
-        micError.value = `Native Rust recording error: ${err?.message || err}`
-        isProcessing.value = false
-      }
-    }
-    else {
-      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop()
-      }
-    }
-  }
-  else {
-    if (isNativeTauri.value) {
-      try {
-        const { invoke } = await import('@tauri-apps/api/core')
-        await invoke('start_native_recording')
-        startTimer()
-        isRecording.value = true
-        result1.value = null
-        result2.value = null
-      }
-      catch (err: any) {
-        micError.value = `Native Rust recording error: ${err?.message || err}`
-        isProcessing.value = false
-      }
-    }
-    else {
-      try {
-        const stream = await getMicrophoneStream()
-        audioChunks = []
-        mediaRecorder = new MediaRecorder(stream)
-
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) audioChunks.push(event.data)
+        // Run transcription in parallel for active slots
+        const activePromises = []
+        for (let i = 0; i < modelCount.value; i++) {
+          const modelId = selectedModels.value[i] || 'openai/gpt-transcribe'
+          activePromises.push(
+            transcribeAudio(audioUrl, modelId, store.openRouterApiKey, duration),
+          )
         }
 
-        mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
-          const audioUrl = URL.createObjectURL(audioBlob)
-          const duration = Math.max(recordSeconds.value, 1)
+        const resList = await Promise.all(activePromises)
 
-          const promise1 = transcribeAudio(audioUrl, selectedModel1.value, store.openRouterApiKey, duration)
-          const promise2 = transcribeAudio(audioUrl, selectedModel2.value, store.openRouterApiKey, duration)
+        // Reset results and assign active outputs
+        const newResults: (TranscriptionVersion | null)[] = [null, null, null, null, null]
+        for (let i = 0; i < resList.length; i++) {
+          newResults[i] = resList[i] ?? null
+        }
+        results.value = newResults
+        isProcessing.value = false
 
-          const [res1, res2] = await Promise.all([promise1, promise2])
-
-          result1.value = res1
-          result2.value = res2
-          isProcessing.value = false
-
-          stream.getTracks().forEach(track => track.stop())
+        const activeVersions = newResults.filter((r): r is TranscriptionVersion => r !== null)
+        if (activeVersions.length > 0) {
+          await store.saveComparisonSuite(audioBlob, activeVersions, fastestIndex.value)
         }
 
-        mediaRecorder.start()
-        startTimer()
-        isRecording.value = true
-        result1.value = null
-        result2.value = null
+        stream.getTracks().forEach(track => track.stop())
       }
-      catch (err: any) {
-        micError.value = err?.message || String(err)
-        isProcessing.value = false
-      }
+
+      mediaRecorder.start()
+      startTimer()
+      isRecording.value = true
+      results.value = [null, null, null, null, null]
+    }
+    catch (err: any) {
+      micError.value = err?.message || String(err)
+      isProcessing.value = false
     }
   }
 }
 
-function copyText(text: string, isEngine1: boolean) {
-  navigator.clipboard.writeText(text)
-  if (isEngine1) {
-    isCopied1.value = true
-    setTimeout(() => (isCopied1.value = false), 2000)
-  }
-  else {
-    isCopied2.value = true
-    setTimeout(() => (isCopied2.value = false), 2000)
+function triggerFileUpload() {
+  if (fileInputRef.value) {
+    fileInputRef.value.click()
   }
 }
 
-const speedLeaderboardText = computed(() => {
-  if (!result1.value || !result2.value) return ''
-  const r1 = result1.value
-  const r2 = result2.value
-  if (r1.latencyMs <= r2.latencyMs) {
-    const ratio = (r2.latencyMs / Math.max(r1.latencyMs, 1)).toFixed(1)
-    return `${r1.engineName} was ${ratio}x faster than ${r2.engineName}!`
-  }
-  else {
-    const ratio = (r1.latencyMs / Math.max(r2.latencyMs, 1)).toFixed(1)
-    return `${r2.engineName} was ${ratio}x faster than ${r1.engineName}!`
-  }
-})
+async function handleFileChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
 
-function formatRecordTime(totalSec: number) {
-  const m = Math.floor(totalSec / 60).toString().padStart(2, '0')
-  const s = (totalSec % 60).toString().padStart(2, '0')
+  micError.value = null
+  isProcessing.value = true
+  results.value = [null, null, null, null, null]
+
+  try {
+    const fileUrl = URL.createObjectURL(file)
+    const activePromises = []
+    for (let i = 0; i < modelCount.value; i++) {
+      const modelId = selectedModels.value[i] || 'openai/gpt-transcribe'
+      activePromises.push(
+        transcribeAudio(fileUrl, modelId, store.openRouterApiKey, 60),
+      )
+    }
+
+    const resList = await Promise.all(activePromises)
+    const newResults: (TranscriptionVersion | null)[] = [null, null, null, null, null]
+    for (let i = 0; i < resList.length; i++) {
+      newResults[i] = resList[i] ?? null
+    }
+    results.value = newResults
+
+    const activeVersions = newResults.filter((r): r is TranscriptionVersion => r !== null)
+    if (activeVersions.length > 0) {
+      await store.saveComparisonSuite(file, activeVersions, fastestIndex.value)
+    }
+  }
+  catch (err: any) {
+    micError.value = `File analysis error: ${err?.message || err}`
+  }
+  finally {
+    isProcessing.value = false
+  }
+}
+
+function formatTimer(seconds: number) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0')
+  const s = (seconds % 60).toString().padStart(2, '0')
   return `${m}:${s}`
 }
+
+function copyText(text: string, index: number) {
+  navigator.clipboard.writeText(text)
+  copiedStates.value[index] = true
+  setTimeout(() => (copiedStates.value[index] = false), 2000)
+}
+
+// Compute the fastest model index among valid non-errored results
+const fastestIndex = computed(() => {
+  let minMs = Number.POSITIVE_INFINITY
+  let bestIdx = -1
+
+  for (let i = 0; i < modelCount.value; i++) {
+    const res = results.value[i]
+    const isError = !res || !res.text || res.text.startsWith('Transcription Error') || res.text.startsWith('OpenRouter Error') || res.text.startsWith('Please set')
+    if (res && !isError && res.latencyMs > 0 && res.latencyMs < minMs) {
+      minMs = res.latencyMs
+      bestIdx = i
+    }
+  }
+  return bestIdx
+})
 
 onUnmounted(() => {
   stopTimer()
@@ -192,173 +231,230 @@ onUnmounted(() => {
 
 <template>
   <div class="space-y-6 animate-in fade-in duration-300">
-    <!-- Unboxed Header Title -->
-    <div class="space-y-1">
-      <h1 class="text-xl font-bold text-foreground tracking-tight">
-        Compare Engines Mode
-      </h1>
-      <p class="text-xs font-medium text-muted-foreground">
-        Parallel Dual-Engine Latency & Accuracy Benchmark (Choose Any 2 Cloud AI Engines)
-      </p>
-    </div>
-
-    <!-- Engine Pickers Card -->
-    <div class="rounded-xl border border-border bg-card p-5 shadow-xs">
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Engine 1 Selector -->
-        <div>
-          <label class="block text-xs font-semibold text-muted-foreground mb-1.5">
-            Engine 1 Model
-          </label>
-          <Select v-model="selectedModel1">
-            <SelectTrigger class="w-full bg-background border-border text-foreground text-xs font-semibold h-9">
-              <SelectValue placeholder="Select Engine 1" />
-            </SelectTrigger>
-            <SelectContent class="bg-card border-border text-card-foreground">
-              <SelectGroup>
-                <SelectLabel class="text-muted-foreground font-bold text-[10px] uppercase tracking-wider px-2 py-1">
-                  OpenRouter Cloud Models
-                </SelectLabel>
-                <SelectItem
-                  v-for="m in ALL_MODELS"
-                  :key="m.id"
-                  :value="m.id"
-                  class="text-xs font-medium cursor-pointer"
-                >
-                  {{ m.name }}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <!-- Engine 2 Selector -->
-        <div>
-          <label class="block text-xs font-semibold text-muted-foreground mb-1.5">
-            Engine 2 Model
-          </label>
-          <Select v-model="selectedModel2">
-            <SelectTrigger class="w-full bg-background border-border text-foreground text-xs font-semibold h-9">
-              <SelectValue placeholder="Select Engine 2" />
-            </SelectTrigger>
-            <SelectContent class="bg-card border-border text-card-foreground">
-              <SelectGroup>
-                <SelectLabel class="text-muted-foreground font-bold text-[10px] uppercase tracking-wider px-2 py-1">
-                  OpenRouter Cloud Models
-                </SelectLabel>
-                <SelectItem
-                  v-for="m in ALL_MODELS"
-                  :key="m.id"
-                  :value="m.id"
-                  class="text-xs font-medium cursor-pointer"
-                >
-                  {{ m.name }}
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Microphone Access Error Banner -->
-    <div
-      v-if="micError"
-      class="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold flex items-center justify-between shadow-xs animate-in fade-in duration-200"
+    <!-- Hidden File Input -->
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept="audio/*"
+      class="hidden"
+      @change="handleFileChange"
     >
-      <span>Microphone Error: {{ micError }}. Please allow microphone permission in your OS settings.</span>
-      <Button
-        size="sm"
-        variant="outline"
-        class="h-7 text-xs font-bold border-destructive/30 text-destructive hover:bg-destructive/20 cursor-pointer ml-3 shrink-0"
-        @click="micError = null"
-      >
-        Dismiss
-      </Button>
-    </div>
 
-    <!-- Record Button Bar -->
-    <div class="rounded-xl border border-border bg-card p-4 flex justify-center shadow-xs">
-      <Button
-        :variant="isRecording ? 'destructive' : 'default'"
-        size="lg"
-        class="font-bold cursor-pointer"
-        :disabled="isProcessing"
-        @click="toggleBenchmarkRecording"
-      >
-        <Square v-if="isRecording" class="w-3.5 h-3.5 fill-white" />
-        <Mic v-else class="w-3.5 h-3.5" />
-        <span>{{ isRecording ? `Stop Benchmark (${formatRecordTime(recordSeconds)})` : 'Record & Compare Both Engines' }}</span>
-      </Button>
-    </div>
-
-    <!-- Results Display -->
-    <div v-if="isProcessing" class="p-12 rounded-xl border border-border bg-card text-center space-y-3 shadow-xs">
-      <div class="w-8 h-8 mx-auto border-3 border-primary border-t-transparent rounded-full animate-spin" />
-      <p class="text-xs font-semibold text-muted-foreground">
-        Benchmarking both engines in parallel...
-      </p>
-    </div>
-
-    <div v-else-if="result1 && result2" class="space-y-4">
-      <!-- Speed Leaderboard Banner -->
-      <div class="p-3.5 rounded-lg border border-border bg-accent text-accent-foreground flex items-center justify-center gap-2 text-xs font-bold shadow-xs text-center">
-        <Trophy class="w-4 h-4 text-amber-600 shrink-0" />
-        <span>{{ speedLeaderboardText }}</span>
+    <!-- Top Bar: Model Count Selector -->
+    <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
+      <div>
+        <h2 class="text-xs font-bold text-foreground">Speech Model Comparison</h2>
+        <p class="text-[11px] text-muted-foreground">Compare latency, accuracy, and cost side-by-side.</p>
       </div>
 
-      <!-- Side-by-Side Dual Columns -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- Engine 1 Column -->
-        <div class="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
-          <div class="flex items-center justify-between border-b border-border pb-2.5">
-            <h3 class="font-bold text-xs text-foreground">
-              Engine 1 ({{ result1.engineName }})
-            </h3>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold bg-secondary text-secondary-foreground border border-border">
-              <Zap class="w-3 h-3 text-amber-600" />
-              {{ store.formatDuration(result1.latencyMs) }}
-            </span>
-          </div>
-          <div class="h-44 overflow-y-auto rounded-lg bg-background p-3 text-xs text-foreground border border-border leading-relaxed select-text font-normal">
-            {{ result1.text }}
-          </div>
-          <div class="flex justify-end">
-            <Button size="sm" class="font-bold cursor-pointer" @click="copyText(result1.text, true)">
-              <Check v-if="isCopied1" class="w-3 h-3 text-emerald-400" />
-              <Copy v-else class="w-3 h-3" />
-              <span>{{ isCopied1 ? 'Copied' : 'Copy' }}</span>
-            </Button>
-          </div>
-        </div>
-
-        <!-- Engine 2 Column -->
-        <div class="rounded-xl border border-border bg-card p-4 space-y-3 shadow-xs">
-          <div class="flex items-center justify-between border-b border-border pb-2.5">
-            <h3 class="font-bold text-xs text-foreground">
-              Engine 2 ({{ result2.engineName }})
-            </h3>
-            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold bg-secondary text-secondary-foreground border border-border">
-              <Zap class="w-3 h-3 text-amber-600" />
-              {{ store.formatDuration(result2.latencyMs) }}
-            </span>
-          </div>
-          <div class="h-44 overflow-y-auto rounded-lg bg-background p-3 text-xs text-foreground border border-border leading-relaxed select-text font-normal">
-            {{ result2.text }}
-          </div>
-          <div class="flex justify-end">
-            <Button size="sm" class="font-bold cursor-pointer" @click="copyText(result2.text, false)">
-              <Check v-if="isCopied2" class="w-3 h-3 text-emerald-400" />
-              <Copy v-else class="w-3 h-3" />
-              <span>{{ isCopied2 ? 'Copied' : 'Copy' }}</span>
-            </Button>
-          </div>
-        </div>
+      <!-- Pill Buttons for 2, 3, 4, or 5 Models -->
+      <div class="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border">
+        <Button
+          size="sm"
+          :variant="modelCount === 2 ? 'default' : 'ghost'"
+          class="h-7 text-xs font-bold px-3 cursor-pointer"
+          @click="modelCount = 2"
+        >
+          2 Models
+        </Button>
+        <Button
+          size="sm"
+          :variant="modelCount === 3 ? 'default' : 'ghost'"
+          class="h-7 text-xs font-bold px-3 cursor-pointer"
+          @click="modelCount = 3"
+        >
+          3 Models
+        </Button>
+        <Button
+          size="sm"
+          :variant="modelCount === 4 ? 'default' : 'ghost'"
+          class="h-7 text-xs font-bold px-3 cursor-pointer"
+          @click="modelCount = 4"
+        >
+          4 Models
+        </Button>
+        <Button
+          size="sm"
+          :variant="modelCount === 5 ? 'default' : 'ghost'"
+          class="h-7 text-xs font-bold px-3 cursor-pointer"
+          @click="modelCount = 5"
+        >
+          5 Models
+        </Button>
       </div>
     </div>
 
-    <div v-else class="p-12 rounded-xl border border-border bg-card text-center text-xs font-medium text-muted-foreground shadow-xs">
-      Record audio above to benchmark any 2 engines side-by-side.
+    <!-- Microphone Error Alert -->
+    <div v-if="micError" class="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold space-y-1">
+      <p>Microphone Access Error:</p>
+      <p class="font-normal font-mono">{{ micError }}</p>
+    </div>
+
+    <!-- Center Control Panel: Record & Upload Actions -->
+    <div class="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center space-y-4 shadow-xs relative overflow-hidden">
+      <div class="relative">
+        <div v-if="isRecording" class="absolute -inset-3 rounded-full bg-destructive/20 animate-ping" />
+        <button
+          class="relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-md cursor-pointer select-none"
+          :class="[
+            isRecording
+              ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90 scale-105'
+              : 'bg-primary text-primary-foreground hover:scale-105 hover:bg-primary/90',
+            isProcessing ? 'opacity-50 pointer-events-none' : '',
+          ]"
+          :disabled="isProcessing"
+          @click="toggleBenchmarkRecording"
+        >
+          <Square v-if="isRecording" class="w-7 h-7 fill-current" />
+          <Mic v-else class="w-9 h-9" />
+        </button>
+      </div>
+
+      <div class="space-y-1">
+        <p v-if="isRecording" class="text-lg font-bold font-mono text-destructive tracking-wide animate-pulse">
+          {{ formatTimer(recordSeconds) }}
+        </p>
+        <p v-else-if="isProcessing" class="text-xs font-semibold text-muted-foreground animate-pulse">
+          Benchmarking {{ modelCount }} Speech Models in Parallel...
+        </p>
+        <p v-else class="text-xs font-bold text-foreground">
+          Record Audio Sample
+        </p>
+      </div>
+
+      <!-- Upload Button -->
+      <div v-if="!isRecording && !isProcessing" class="pt-1">
+        <Button
+          variant="outline"
+          size="sm"
+          class="text-xs font-semibold cursor-pointer border-border shadow-xs"
+          @click="triggerFileUpload"
+        >
+          <Upload class="w-3.5 h-3.5 mr-1.5" />
+          <span>Upload Audio File</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- 2x2 Grid Layout (Max 2 Columns) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div
+        v-for="index in modelCount"
+        :key="index"
+        class="rounded-2xl border border-border bg-card p-5 space-y-3.5 shadow-xs relative flex flex-col justify-between"
+        :class="[
+          results[index - 1]?.text?.startsWith('Transcription Error') || results[index - 1]?.text?.startsWith('OpenRouter Error')
+            ? 'border-destructive/40 bg-destructive/5'
+            : (fastestIndex === (index - 1) && results[index - 1] ? 'border-amber-500/40 bg-amber-500/5' : ''),
+        ]"
+      >
+        <!-- Card Header: Model Selector + Badges -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between gap-2 border-b border-border pb-3">
+            <div class="flex-1 space-y-1">
+              <label class="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                Speech Model {{ index }}
+              </label>
+              <Select v-model="selectedModels[index - 1]">
+                <SelectTrigger class="w-full h-8 text-xs bg-background">
+                  <SelectValue placeholder="Select Speech Model" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem v-for="m in ALL_MODELS" :key="m.id" :value="m.id" class="text-xs">
+                      {{ m.name }} (${{ m.costPerMin }}/m)
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <!-- Error Badge -->
+            <span
+              v-if="results[index - 1]?.text?.startsWith('Transcription Error') || results[index - 1]?.text?.startsWith('OpenRouter Error')"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold bg-destructive/20 text-destructive border border-destructive/30 shrink-0 self-end mb-0.5"
+            >
+              <AlertCircle class="w-3 h-3" />
+              API Error
+            </span>
+
+            <!-- Fastest Winner Badge -->
+            <span
+              v-else-if="fastestIndex === (index - 1) && results[index - 1]"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0 self-end mb-0.5"
+            >
+              <Trophy class="w-3 h-3" />
+              Fastest
+            </span>
+          </div>
+
+          <!-- Active Metrics & Actions -->
+          <div v-if="results[index - 1]" class="space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-1 bg-muted p-0.5 rounded-md border border-border">
+                <Button
+                  size="sm"
+                  :variant="activeTabs[index - 1] === 'original' ? 'default' : 'ghost'"
+                  class="h-5 text-[10px] font-bold px-2 cursor-pointer"
+                  @click="activeTabs[index - 1] = 'original'"
+                >
+                  Original
+                </Button>
+                <Button
+                  size="sm"
+                  :variant="activeTabs[index - 1] === 'english' ? 'default' : 'ghost'"
+                  class="h-5 text-[10px] font-bold px-2 cursor-pointer"
+                  @click="activeTabs[index - 1] = 'english'"
+                >
+                  English
+                </Button>
+              </div>
+
+              <div class="flex items-center gap-1.5">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-secondary text-secondary-foreground border border-border">
+                  <Zap class="w-3 h-3 text-amber-600" />
+                  {{ store.formatDuration(results[index - 1]!.latencyMs) }}
+                </span>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="h-6 text-[10px] font-semibold cursor-pointer border-border px-2"
+                  @click="copyText(activeTabs[index - 1] === 'english' && results[index - 1]?.translatedText ? (results[index - 1]?.translatedText || '') : (results[index - 1]?.text || ''), index - 1)"
+                >
+                  <Check v-if="copiedStates[index - 1]" class="w-3 h-3 text-green-600 mr-1" />
+                  <Copy v-else class="w-3 h-3 mr-1" />
+                  <span>{{ copiedStates[index - 1] ? 'Copied' : 'Copy' }}</span>
+                </Button>
+              </div>
+            </div>
+
+            <!-- Output Text -->
+            <div v-if="activeTabs[index - 1] === 'english' && !results[index - 1]!.translatedText" class="p-5 text-center space-y-2 rounded-xl bg-muted/30 border border-border min-h-[120px] flex flex-col items-center justify-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                class="h-7 text-xs font-bold border border-border cursor-pointer px-3"
+                :disabled="translatingSlots[index - 1]"
+                @click="translateSlot(index - 1)"
+              >
+                <span>{{ translatingSlots[index - 1] ? 'Translating...' : 'Generate English Translation' }}</span>
+              </Button>
+            </div>
+            <p v-else-if="activeTabs[index - 1] === 'english' && results[index - 1]!.translatedText" class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-3.5 rounded-xl bg-muted/40 border border-border min-h-[120px]">
+              {{ results[index - 1]!.translatedText }}
+            </p>
+            <p v-else class="text-xs leading-relaxed text-foreground whitespace-pre-wrap font-mono p-3.5 rounded-xl bg-muted/40 border border-border min-h-[120px]">
+              {{ results[index - 1]!.text }}
+            </p>
+          </div>
+
+          <!-- Idle Placeholder -->
+          <div v-else class="py-10 text-center text-xs text-muted-foreground">
+            Transcription output for Model {{ index }} will appear here.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

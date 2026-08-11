@@ -7,7 +7,9 @@ import './assets/css/base.css'
 // ─── Apply theme BEFORE Vue mounts to prevent flash ───────────────────────────
 // Reads maina_theme_mode from localStorage immediately on script parse.
 // 'light' → no class, 'dark' → add .dark, 'system' → follow OS preference.
-;(function applyThemeEarly() {
+;
+
+(function applyThemeEarly() {
   const stored = localStorage.getItem('maina_theme_mode') || 'system'
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   const shouldDark

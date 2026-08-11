@@ -1,85 +1,89 @@
 import type { TranscriptionVersion } from '@/stores/maina-store'
 
-export interface ModelMetadata {
+export interface ModelInfo {
   id: string
   name: string
-  price: string
-  badge: string
-  badgeColor: string
-  points: string[]
+  provider: string
+  costPerMin: number
+  latencyGrade: 'ultra-fast' | 'fast' | 'balanced'
+  accuracyGrade: 'high' | 'very-high' | 'state-of-the-art'
+  description: string
+  badge?: string
 }
 
-export const ALL_MODELS: ModelMetadata[] = [
+export const ALL_MODELS: ModelInfo[] = [
+  {
+    id: 'qwen/qwen3.7-flash',
+    name: 'Qwen 3.7 Flash (Multimodal LLM)',
+    provider: 'Alibaba',
+    costPerMin: 0.0001,
+    latencyGrade: 'ultra-fast',
+    accuracyGrade: 'state-of-the-art',
+    description: 'Multimodal Audio LLM with region-aware single-pass transcript + translation.',
+    badge: 'Single-Pass Dual Output',
+  },
   {
     id: 'openai/gpt-transcribe',
-    name: 'OpenAI GPT-Transcribe ($0.0045/m)',
-    price: '$0.0045 / min',
-    badge: 'Highest Quality',
-    badgeColor: 'border-purple-500/30 text-purple-400 bg-purple-500/10',
-    points: [
-      'Flagship OpenAI cloud transcription model.',
-      'Exceptional accuracy on Urdu, Hindi, and 99+ global languages.',
-      'Smart punctuation, auto-formatting, and spoken filler word removal.',
-      'Supports keyword context hints for domain-specific terminology.',
-      'Best overall choice for high-accuracy voice notes and emails.',
-    ],
+    name: 'OpenAI GPT-Transcribe',
+    provider: 'OpenAI',
+    costPerMin: 0.0045,
+    latencyGrade: 'fast',
+    accuracyGrade: 'state-of-the-art',
+    description: 'High-accuracy whisper & multimodal transcription engine.',
+    badge: 'Popular',
   },
   {
     id: 'deepgram/nova-3',
-    name: 'Deepgram Nova-3 Multi ($0.0043/m)',
-    price: '$0.0043 / min',
-    badge: 'Code-Switching King',
-    badgeColor: 'border-indigo-500/30 text-indigo-400 bg-indigo-500/10',
-    points: [
-      'Engineered specifically for multilingual code-switching (Hinglish & Urdish).',
-      'Seamlessly switches between English and Urdu/Hindi mid-sentence.',
-      'Sub-300ms real-time processing speed for near-instant output.',
-      'Custom curriculum training on South Asian spoken accents.',
-      'Best choice for conversational speech where you mix languages.',
-    ],
+    name: 'Deepgram Nova-3',
+    provider: 'Deepgram',
+    costPerMin: 0.0043,
+    latencyGrade: 'ultra-fast',
+    accuracyGrade: 'very-high',
+    description: 'Blazing fast low-latency streaming & batch speech engine.',
+    badge: 'Fastest',
   },
   {
     id: 'nvidia/parakeet-tdt-0.6b-v3',
-    name: 'NVIDIA Parakeet ($0.0015/m)',
-    price: '$0.0015 / min',
-    badge: 'High Speed (European)',
-    badgeColor: 'border-amber-500/30 text-amber-400 bg-amber-500/10',
-    points: [
-      'NVIDIA Token-and-Duration Transducer (TDT) high-speed architecture.',
-      'Optimized for 25 European languages and English.',
-      'Produces precise word-aligned timestamp data.',
-      'Note: Does NOT support Urdu or Hindi.',
-      'Best choice for rapid English and European language transcription.',
-    ],
+    name: 'NVIDIA Parakeet TDT v3',
+    provider: 'NVIDIA',
+    costPerMin: 0.0035,
+    latencyGrade: 'ultra-fast',
+    accuracyGrade: 'high',
+    description: 'Ultra lightweight speech recognition model optimized for speed.',
   },
   {
     id: 'fish-audio/transcribe-1',
-    name: 'Fish Audio ($0.0001/m)',
-    price: '$0.0001 / min',
-    badge: 'Ultra Budget King',
-    badgeColor: 'border-teal-500/30 text-teal-400 bg-teal-500/10',
-    points: [
-      'Cheaper than air — 45x lower cost than OpenAI.',
-      'Optimized for Chinese (Mandarin) and English speech.',
-      'Ideal for high-volume automated batch audio processing.',
-      'Note: Low accuracy on South Asian languages.',
-      'Best choice for bulk English/Chinese recording on a budget.',
-    ],
+    name: 'Fish Audio Transcribe-1',
+    provider: 'Fish Audio',
+    costPerMin: 0.0038,
+    latencyGrade: 'fast',
+    accuracyGrade: 'very-high',
+    description: 'Multilingual speech recognition with broad language support.',
   },
 ]
 
 const PRICE_PER_MIN: Record<string, number> = {
+  'qwen/qwen3.7-flash': 0.0001,
   'openai/gpt-transcribe': 0.0045,
   'deepgram/nova-3': 0.0043,
-  'nvidia/parakeet-tdt-0.6b-v3': 0.0015,
-  'fish-audio/transcribe-1': 0.0001,
+  'nvidia/parakeet-tdt-0.6b-v3': 0.0035,
+  'fish-audio/transcribe-1': 0.0038,
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
+  })
 }
 
 export async function transcribeAudio(
   audioFilePath: string,
   modelId: string,
   apiKey: string,
-  durationSeconds: number,
+  durationSeconds: number = 5,
 ): Promise<TranscriptionVersion> {
   const startTime = Date.now()
 
@@ -96,32 +100,99 @@ export async function transcribeAudio(
   }
 
   try {
-    const isTauriEnv = typeof window !== 'undefined' && ('__TAURI_INTERNALS__' in window || '__TAURI__' in window)
+    let audioBlob: Blob
 
-    if (!isTauriEnv) {
-      // Browser preview simulation
-      await new Promise(r => setTimeout(r, 1200))
+    if (audioFilePath.startsWith('blob:') || audioFilePath.startsWith('http')) {
+      const res = await fetch(audioFilePath)
+      audioBlob = await res.blob()
+    }
+    else {
+      const res = await fetch(audioFilePath)
+      audioBlob = await res.blob()
+    }
+
+    // =========================================================================
+    // PATH A: Qwen 3.7 Flash Multimodal LLM (Single-Pass Audio + Context)
+    // =========================================================================
+    if (modelId.startsWith('qwen/')) {
+      const base64Audio = await blobToBase64(audioBlob)
+      const userLocale = typeof navigator !== 'undefined' ? navigator.language : 'en-US'
+      const userTimezone = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC'
+
+      const systemPrompt = `You are a world-class global speech recognition LLM. Listen to the audio clip carefully.
+User's runtime context:
+- Locale: ${userLocale}
+- Timezone/Region: ${userTimezone}
+
+Rules:
+1. Transcribe the spoken audio with 100% verbatim fidelity into the exact script style natively used by everyday speakers in that region (e.g. Roman Urdu/Hinglish in Latin script for Hindustani in South Asia/Diaspora, or native script). Keep English tech terms in English.
+2. Provide a fluent English translation.
+3. Respond ONLY with a valid JSON object: { "text": "<verbatim_transcript>", "translatedText": "<english_translation>" }`
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://mainavoice.app',
+          'X-Title': 'Maina Voice Web App',
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'input_audio',
+                  input_audio: {
+                    data: base64Audio.split(',')[1] || base64Audio,
+                    format: 'wav',
+                  },
+                },
+              ],
+            },
+          ],
+          response_format: { type: 'json_object' },
+        }),
+      })
+
+      if (!response.ok) {
+        const errText = await response.text()
+        throw new Error(`OpenRouter HTTP ${response.status}: ${errText}`)
+      }
+
+      const json = await response.json()
+      const rawContent = json.choices?.[0]?.message?.content || '{}'
+      let parsed = { text: '', translatedText: '' }
+      try {
+        parsed = JSON.parse(rawContent)
+      }
+      catch {
+        parsed.text = rawContent
+      }
+
+      const textOutput = parsed.text || 'Transcription completed, but no text output was returned.'
+      const latencyMs = Date.now() - startTime
+      const wordCount = textOutput.trim().split(/\s+/).filter(Boolean).length
+      const costEstimate = 0.0001
+
       return {
         versionNumber: 1,
         engineName: modelId,
-        text: 'Recorded audio transcribed via OpenRouter API. (Sample voice note transcript generated successfully.)',
-        latencyMs: Date.now() - startTime,
-        wordCount: 11,
-        costEstimate: (durationSeconds / 60) * (PRICE_PER_MIN[modelId] || 0.0045),
+        text: textOutput,
+        translatedText: parsed.translatedText || undefined,
+        latencyMs,
+        wordCount,
+        costEstimate,
         timestamp: new Date().toISOString(),
       }
     }
 
-    // Read raw bytes from disk via Tauri
-    const { invoke } = await import('@tauri-apps/api/core')
-    const bytes = (await invoke('read_file_binary', { path: audioFilePath })) as number[]
-    const uint8 = new Uint8Array(bytes)
-
-    // Build a Blob from the raw WAV bytes
-    const audioBlob = new Blob([uint8], { type: 'audio/wav' })
-
-    // Use multipart/form-data — the correct endpoint for audio transcription models
-    // OpenRouter: POST /api/v1/audio/transcriptions (same as OpenAI's audio API)
+    // =========================================================================
+    // PATH B: Standard Dedicated STT Models (Whisper / Deepgram / Parakeet)
+    // =========================================================================
     const form = new FormData()
     form.append('file', audioBlob, 'recording.wav')
     form.append('model', modelId)
@@ -131,28 +202,34 @@ export async function transcribeAudio(
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': 'https://mainavoice.app',
-        'X-Title': 'Maina Voice Desktop',
-        // NOTE: Do NOT set Content-Type manually — fetch sets it with the boundary automatically
+        'X-Title': 'Maina Voice Web App',
       },
       body: form,
     })
 
     if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}))
-      throw new Error(errJson?.error?.message || `HTTP Error ${response.status}`)
+      const errText = await response.text()
+      let errorMsg = `OpenRouter HTTP ${response.status}: ${response.statusText}`
+      try {
+        const errJson = JSON.parse(errText)
+        if (errJson.error?.message) {
+          errorMsg = `OpenRouter Error: ${errJson.error.message}`
+        }
+      }
+      catch {}
+      throw new Error(errorMsg)
     }
 
-    const data = await response.json()
-    // OpenAI-compatible audio transcriptions response: { text: "..." }
-    const text = (data.text || data.choices?.[0]?.message?.content || '').trim() || 'No transcript text returned.'
+    const json = await response.json()
+    const textOutput = json.text || json.transcript || json.choices?.[0]?.message?.content || 'Transcription completed, but no text output was returned.'
     const latencyMs = Date.now() - startTime
-    const wordCount = text.split(/\s+/).filter(Boolean).length
+    const wordCount = textOutput.trim().split(/\s+/).filter(Boolean).length
     const costEstimate = (durationSeconds / 60) * (PRICE_PER_MIN[modelId] || 0.0045)
 
     return {
       versionNumber: 1,
       engineName: modelId,
-      text,
+      text: textOutput,
       latencyMs,
       wordCount,
       costEstimate,
@@ -169,5 +246,48 @@ export async function transcribeAudio(
       costEstimate: 0.0,
       timestamp: new Date().toISOString(),
     }
+  }
+}
+
+export async function translateToEnglish(text: string, apiKey: string): Promise<string> {
+  if (!text || text.trim() === '' || text.startsWith('Please set') || text.startsWith('Transcription Error')) {
+    return text
+  }
+  if (!apiKey || apiKey.trim() === '') {
+    return 'Please set your OpenRouter API Key in Settings to translate text.'
+  }
+
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://mainavoice.app',
+        'X-Title': 'Maina Voice Web App',
+      },
+      body: JSON.stringify({
+        model: 'qwen/qwen3.7-flash',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert translator. Translate the provided audio transcript into fluent English. Preserve the original meaning and formatting. Respond ONLY with the direct English translation.',
+          },
+          { role: 'user', content: text },
+        ],
+        temperature: 0.2,
+      }),
+    })
+
+    if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`OpenRouter HTTP ${res.status}: ${errText}`)
+    }
+
+    const json = await res.json()
+    return json.choices?.[0]?.message?.content?.trim() || text
+  }
+  catch (err: any) {
+    return `Translation Error: ${err?.message || err}`
   }
 }
