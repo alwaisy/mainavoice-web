@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import type { TranscriptionVersion } from '@/stores/maina-store'
+import { AlertCircle, Check, Copy, Mic, Square, Trophy, Upload, Zap } from 'lucide-vue-next'
+import { computed, onUnmounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
 import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
-import type { TranscriptionVersion } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
-import { AlertCircle, Check, Copy, Mic, Square, Trophy, Upload, Zap } from 'lucide-vue-next'
-import { computed, onUnmounted, ref } from 'vue'
 
 const store = useMainaStore()
 
@@ -30,7 +30,8 @@ const translatingSlots = ref<boolean[]>([false, false, false, false, false])
 
 async function translateSlot(index: number) {
   const res = results.value[index]
-  if (!res || !res.text || translatingSlots.value[index]) return
+  if (!res || !res.text || translatingSlots.value[index])
+    return
   translatingSlots.value[index] = true
   try {
     const translated = await translateToEnglish(res.text, store.openRouterApiKey)
@@ -86,6 +87,22 @@ async function getMicrophoneStream() {
   }
 }
 
+// Compute the fastest model index among valid non-errored results
+const fastestIndex = computed(() => {
+  let minMs = Number.POSITIVE_INFINITY
+  let bestIdx = -1
+
+  for (let i = 0; i < modelCount.value; i++) {
+    const res = results.value[i]
+    const isError = !res || !res.text || res.text.startsWith('Transcription Error') || res.text.startsWith('OpenRouter Error') || res.text.startsWith('Please set')
+    if (res && !isError && res.latencyMs > 0 && res.latencyMs < minMs) {
+      minMs = res.latencyMs
+      bestIdx = i
+    }
+  }
+  return bestIdx
+})
+
 async function toggleBenchmarkRecording() {
   micError.value = null
   if (isRecording.value) {
@@ -109,7 +126,8 @@ async function toggleBenchmarkRecording() {
       }
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+        const mimeType = mediaRecorder?.mimeType || 'audio/webm'
+        const audioBlob = new Blob(audioChunks, { type: mimeType })
         const audioUrl = URL.createObjectURL(audioBlob)
         const duration = Math.max(recordSeconds.value, 1)
 
@@ -161,7 +179,8 @@ function triggerFileUpload() {
 async function handleFileChange(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  if (!file) return
+  if (!file)
+    return
 
   micError.value = null
   isProcessing.value = true
@@ -209,22 +228,6 @@ function copyText(text: string, index: number) {
   setTimeout(() => (copiedStates.value[index] = false), 2000)
 }
 
-// Compute the fastest model index among valid non-errored results
-const fastestIndex = computed(() => {
-  let minMs = Number.POSITIVE_INFINITY
-  let bestIdx = -1
-
-  for (let i = 0; i < modelCount.value; i++) {
-    const res = results.value[i]
-    const isError = !res || !res.text || res.text.startsWith('Transcription Error') || res.text.startsWith('OpenRouter Error') || res.text.startsWith('Please set')
-    if (res && !isError && res.latencyMs > 0 && res.latencyMs < minMs) {
-      minMs = res.latencyMs
-      bestIdx = i
-    }
-  }
-  return bestIdx
-})
-
 onUnmounted(() => {
   stopTimer()
 })
@@ -244,8 +247,12 @@ onUnmounted(() => {
     <!-- Top Bar: Model Count Selector -->
     <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
       <div>
-        <h2 class="text-xs font-bold text-foreground">Speech Model Comparison</h2>
-        <p class="text-[11px] text-muted-foreground">Compare latency, accuracy, and cost side-by-side.</p>
+        <h2 class="text-xs font-bold text-foreground">
+          Speech Model Comparison
+        </h2>
+        <p class="text-[11px] text-muted-foreground">
+          Compare latency, accuracy, and cost side-by-side.
+        </p>
       </div>
 
       <!-- Pill Buttons for 2, 3, 4, or 5 Models -->
@@ -274,14 +281,15 @@ onUnmounted(() => {
         >
           4 Models
         </Button>
-
       </div>
     </div>
 
     <!-- Microphone Error Alert -->
     <div v-if="micError" class="p-4 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold space-y-1">
       <p>Microphone Access Error:</p>
-      <p class="font-normal font-mono">{{ micError }}</p>
+      <p class="font-normal font-mono">
+        {{ micError }}
+      </p>
     </div>
 
     <!-- Center Control Panel: Record & Upload Actions -->

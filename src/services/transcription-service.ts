@@ -60,12 +60,12 @@ const PRICE_PER_MIN: Record<string, number> = {
   'fish-audio/transcribe-1': 0.0038,
 }
 
-
 async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
   try {
     const arrayBuffer = await blob.arrayBuffer()
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioCtx) return blob
+    if (!AudioCtx)
+      return blob
     const audioContext = new AudioCtx()
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
 
@@ -75,7 +75,8 @@ async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
     let channelData: Float32Array
     if (numChannels === 1) {
       channelData = audioBuffer.getChannelData(0)
-    } else {
+    }
+    else {
       const left = audioBuffer.getChannelData(0)
       const right = audioBuffer.getChannelData(1)
       channelData = new Float32Array(left.length)
@@ -98,11 +99,11 @@ async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
     writeString(8, 'WAVE')
     writeString(12, 'fmt ')
     view.setUint32(16, 16, true) // Subchunk1Size
-    view.setUint16(20, 1, true)  // AudioFormat (PCM)
-    view.setUint16(22, 1, true)  // NumChannels (1 = Mono)
+    view.setUint16(20, 1, true) // AudioFormat (PCM)
+    view.setUint16(22, 1, true) // NumChannels (1 = Mono)
     view.setUint32(24, sampleRate, true) // SampleRate
     view.setUint32(28, sampleRate * 2, true) // ByteRate
-    view.setUint16(32, 2, true)  // BlockAlign
+    view.setUint16(32, 2, true) // BlockAlign
     view.setUint16(34, 16, true) // BitsPerSample
     writeString(36, 'data')
     view.setUint32(40, channelData.length * 2, true)
@@ -116,7 +117,8 @@ async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
 
     await audioContext.close()
     return new Blob([wavBuffer], { type: 'audio/wav' })
-  } catch (e) {
+  }
+  catch (e) {
     console.warn('WAV conversion fallback to original blob:', e)
     return blob
   }
@@ -186,7 +188,7 @@ export async function transcribeAudio(
 
     const json = await response.json()
     let textOutput = json.text || json.transcript || json.choices?.[0]?.message?.content || 'Transcription completed, but no text output was returned.'
-    
+
     // Auto-transliterate Devanagari Hindi -> Perso-Arabic Urdu if user is in Pakistan / Urdu region
     textOutput = autoTransliterateIfUrduRegion(textOutput)
 

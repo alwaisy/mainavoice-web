@@ -45,7 +45,8 @@ const activeTab = ref<'original' | 'english'>('original')
 const isTranslating = ref(false)
 
 async function handleTranslate() {
-  if (!activeResult.value || !activeResult.value.text || isTranslating.value) return
+  if (!activeResult.value || !activeResult.value.text || isTranslating.value)
+    return
   isTranslating.value = true
   try {
     const translated = await translateToEnglish(activeResult.value.text, store.openRouterApiKey)
@@ -105,7 +106,8 @@ async function toggleRecording() {
       }
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' })
+        const mimeType = mediaRecorder?.mimeType || 'audio/webm'
+        const audioBlob = new Blob(audioChunks, { type: mimeType })
         const audioUrl = URL.createObjectURL(audioBlob)
         const duration = Math.max(recordSeconds.value, 1)
 
@@ -200,7 +202,7 @@ function saveAudio() {
     document.body.removeChild(a)
   }
   catch (err: any) {
-    alert(`Save audio failed: ${err?.message || err}`)
+    console.error(`Save audio failed: ${err?.message || err}`)
   }
   finally {
     isSavingAudio.value = false
@@ -223,7 +225,7 @@ function saveTranscript() {
     URL.revokeObjectURL(url)
   }
   catch (err: any) {
-    alert(`Export failed: ${err?.message || err}`)
+    console.error(`Export failed: ${err?.message || err}`)
   }
   finally {
     isSavingText.value = false

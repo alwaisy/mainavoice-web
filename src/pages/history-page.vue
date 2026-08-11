@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
 import type { RecordingHistoryItem } from '@/stores/maina-store'
-import { useMainaStore } from '@/stores/maina-store'
 import { ExternalLink, Pause, Play, Search, Swords, Trash2, Trophy, Zap } from 'lucide-vue-next'
 import { computed, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { Button } from '@/components/ui/button'
+import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
+import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const searchQuery = ref('')
@@ -15,7 +15,8 @@ const currentlyPlayingId = ref<string | null>(null)
 let currentAudioInstance: HTMLAudioElement | null = null
 
 const filteredHistory = computed(() => {
-  if (!searchQuery.value.trim()) return store.history
+  if (!searchQuery.value.trim())
+    return store.history
   const q = searchQuery.value.toLowerCase()
   return store.history.filter((item: RecordingHistoryItem) => {
     const currentVer = item.versions[item.activeVersionIndex] || item.versions[0]
@@ -28,7 +29,8 @@ const filteredHistory = computed(() => {
 })
 
 async function toggleQuickPlay(id: string, fallbackPath?: string, event?: Event) {
-  if (event) event.stopPropagation()
+  if (event)
+    event.stopPropagation()
 
   // 1. If user clicks the currently playing audio card -> Pause it
   if (currentlyPlayingId.value === id && currentAudioInstance) {
@@ -47,7 +49,7 @@ async function toggleQuickPlay(id: string, fallbackPath?: string, event?: Event)
   // 3. Resolve IndexedDB blob URL
   const src = await store.getAudioUrlForRecording(id, fallbackPath)
   if (!src) {
-    alert('Audio file not found.')
+    console.warn('Audio file not found.')
     return
   }
 
@@ -68,7 +70,7 @@ async function toggleQuickPlay(id: string, fallbackPath?: string, event?: Event)
   catch (e: any) {
     currentlyPlayingId.value = null
     currentAudioInstance = null
-    alert(`Audio playback error: ${e?.message || e}`)
+    console.error(`Audio playback error: ${e?.message || e}`)
   }
 }
 

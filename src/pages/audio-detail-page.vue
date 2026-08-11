@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import type { RecordingHistoryItem, TranscriptionVersion } from '@/stores/maina-store'
+import { AlertCircle, ArrowLeft, Check, Copy, Download, Pause, Play, RefreshCw, Swords, Trash2, Trophy, Zap } from 'lucide-vue-next'
+import { computed, onUnmounted, ref } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ALL_MODELS, transcribeAudio, translateToEnglish } from '@/services/transcription-service'
 import { autoTransliterateIfUrduRegion } from '@/services/transliteration-service'
-import type { RecordingHistoryItem, TranscriptionVersion } from '@/stores/maina-store'
 import { useMainaStore } from '@/stores/maina-store'
-import { AlertCircle, ArrowLeft, Check, Copy, Download, Pause, Play, RefreshCw, Swords, Trash2, Trophy, Zap } from 'lucide-vue-next'
-import { computed, onUnmounted, ref } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -33,8 +33,15 @@ else if (item.value && item.value.versions.length > 0) {
   store.setActiveVersion(item.value.id, item.value.versions.length - 1)
 }
 
+const activeVersion = computed<TranscriptionVersion | undefined>(() => {
+  if (!item.value)
+    return undefined
+  return item.value.versions[item.value.activeVersionIndex] || item.value.versions[0]
+})
+
 async function handleTranslate() {
-  if (!item.value || !activeVersion.value || !activeVersion.value.text || isTranslating.value) return
+  if (!item.value || !activeVersion.value || !activeVersion.value.text || isTranslating.value)
+    return
   isTranslating.value = true
   try {
     const translated = await translateToEnglish(activeVersion.value.text, store.openRouterApiKey)
@@ -47,7 +54,8 @@ async function handleTranslate() {
 }
 
 async function handleCardTranslate(vIndex: number) {
-  if (!item.value || !item.value.versions[vIndex] || cardTranslating.value[vIndex]) return
+  if (!item.value || !item.value.versions[vIndex] || cardTranslating.value[vIndex])
+    return
   cardTranslating.value[vIndex] = true
   try {
     const textToTranslate = item.value.versions[vIndex].text
@@ -73,9 +81,11 @@ const duration = ref(0)
 let audioElement: HTMLAudioElement | null = null
 
 async function initAudio() {
-  if (!item.value) return
+  if (!item.value)
+    return
   const src = await store.getAudioUrlForRecording(item.value.id, item.value.audioFilePath)
-  if (!src) return
+  if (!src)
+    return
 
   if (audioElement) {
     audioElement.pause()
@@ -97,8 +107,10 @@ async function initAudio() {
 initAudio()
 
 async function togglePlay() {
-  if (!audioElement) await initAudio()
-  if (!audioElement) return
+  if (!audioElement)
+    await initAudio()
+  if (!audioElement)
+    return
 
   if (isPlaying.value) {
     audioElement.pause()
@@ -107,7 +119,7 @@ async function togglePlay() {
   else {
     audioElement.play().then(() => {
       isPlaying.value = true
-    }).catch(e => alert(`Audio playback error: ${e?.message || e}`))
+    }).catch(e => console.error(`Audio playback error: ${e?.message || e}`))
   }
 }
 
@@ -121,7 +133,8 @@ function seekAudio(event: Event) {
 }
 
 function formatTime(sec: number) {
-  if (Number.isNaN(sec) || !Number.isFinite(sec)) return '00:00'
+  if (Number.isNaN(sec) || !Number.isFinite(sec))
+    return '00:00'
   const m = Math.floor(sec / 60).toString().padStart(2, '0')
   const s = Math.floor(sec % 60).toString().padStart(2, '0')
   return `${m}:${s}`
@@ -132,14 +145,10 @@ function formatTimestamp(isoStr: string) {
   return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
-const activeVersion = computed<TranscriptionVersion | undefined>(() => {
-  if (!item.value) return undefined
-  return item.value.versions[item.value.activeVersionIndex] || item.value.versions[0]
-})
-
 // Compute fastest model index for comparison suites (excluding errored models)
 const fastestVersionIndex = computed(() => {
-  if (!item.value?.isComparisonSuite || !item.value.versions.length) return -1
+  if (!item.value?.isComparisonSuite || !item.value.versions.length)
+    return -1
   let minMs = Number.POSITIVE_INFINITY
   let bestIdx = -1
   item.value.versions.forEach((ver, idx) => {
@@ -153,7 +162,8 @@ const fastestVersionIndex = computed(() => {
 })
 
 async function runReTranscription() {
-  if (!item.value?.audioFilePath) return
+  if (!item.value?.audioFilePath)
+    return
   isRetranscribing.value = true
   try {
     const result = await transcribeAudio(
@@ -165,7 +175,7 @@ async function runReTranscription() {
     store.addVersionToItem(item.value.id, result)
   }
   catch (err: any) {
-    alert(`Re-transcription failed: ${err?.message || err}`)
+    console.error(`Re-transcription failed: ${err?.message || err}`)
   }
   finally {
     isRetranscribing.value = false
@@ -173,7 +183,8 @@ async function runReTranscription() {
 }
 
 function copyText(text?: string, cardIdx?: number) {
-  if (!text) return
+  if (!text)
+    return
   navigator.clipboard.writeText(text)
   if (cardIdx !== undefined) {
     copiedCardIndex.value = cardIdx
@@ -186,7 +197,8 @@ function copyText(text?: string, cardIdx?: number) {
 }
 
 function saveAudio() {
-  if (!item.value?.audioFilePath) return
+  if (!item.value?.audioFilePath)
+    return
   try {
     isSavingAudio.value = true
     const a = document.createElement('a')
@@ -197,7 +209,7 @@ function saveAudio() {
     document.body.removeChild(a)
   }
   catch (err: any) {
-    alert(`Save audio failed: ${err?.message || err}`)
+    console.error(`Save audio failed: ${err?.message || err}`)
   }
   finally {
     isSavingAudio.value = false
@@ -205,7 +217,8 @@ function saveAudio() {
 }
 
 function saveTranscript() {
-  if (!activeVersion.value?.text) return
+  if (!activeVersion.value?.text)
+    return
   try {
     isSavingText.value = true
     const blob = new Blob([activeVersion.value.text], { type: 'text/plain;charset=utf-8' })
@@ -219,7 +232,7 @@ function saveTranscript() {
     URL.revokeObjectURL(url)
   }
   catch (err: any) {
-    alert(`Save transcript failed: ${err?.message || err}`)
+    console.error(`Save transcript failed: ${err?.message || err}`)
   }
   finally {
     isSavingText.value = false
@@ -227,7 +240,9 @@ function saveTranscript() {
 }
 
 async function deleteRecording() {
-  if (!item.value) return
+  if (!item.value)
+    return
+  // eslint-disable-next-line no-alert
   if (confirm('Are you sure you want to delete this recording item?')) {
     if (audioElement) {
       audioElement.pause()
