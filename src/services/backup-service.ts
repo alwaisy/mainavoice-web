@@ -139,7 +139,25 @@ export async function exportBackupArchive(): Promise<void> {
       tzStr = `GMT${sign}${tzHours}${tzMins !== '00' ? tzMins : ''}`
     }
 
-    return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}_${tzStr}.zip`
+    let countryCode = ''
+    if (typeof navigator !== 'undefined') {
+      const locales = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language]
+      for (const loc of locales) {
+        if (loc) {
+          const parts = loc.split('-')
+          if (parts.length > 1) {
+            const region = parts[parts.length - 1].toUpperCase()
+            if (region.length === 2 && /^[A-Z]{2}$/.test(region)) {
+              countryCode = region
+              break
+            }
+          }
+        }
+      }
+    }
+
+    const countrySuffix = countryCode ? `_${countryCode}` : ''
+    return `mainavoice_backup_${year}-${month}-${day}_${hoursStr}-${minutes}-${seconds}${ampm}${countrySuffix}_${tzStr}.zip`
   }
 
   const zipBlob = await zip.generateAsync({ type: 'blob' })
