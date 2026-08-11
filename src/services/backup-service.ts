@@ -9,31 +9,56 @@ import {
   dbSetSetting,
 } from './db-service'
 
-export interface BackupMetadata {
+export interface TranscriptionsBackup {
   version: number
   appName: string
   exportedAt: string
   recordings: any[]
-  settings: any[]
+}
+
+export interface SettingsBackup {
+  version: number
+  appName: string
+  exportedAt: string
+  settings: Record<string, any>
 }
 
 export async function exportBackupArchive(): Promise<void> {
   const recordings = await dbGetAllRecordings()
   const audioBlobs = await dbGetAllAudioBlobs()
-  const settings = await dbGetAllSettings()
+  const rawSettings = await dbGetAllSettings()
+
+  // Format settings array [{key, value}] into clean key-value object
+  const settingsObject: Record<string, any> = {}
+  for (const s of rawSettings) {
+    if (s.key) {
+      settingsObject[s.key] = s.value
+    }
+  }
 
   const zip = new JSZip()
 
-  const metadata: BackupMetadata = {
+  const transcriptionsBackup: TranscriptionsBackup = {
     version: 1,
     appName: 'Maina Voice',
     exportedAt: new Date().toISOString(),
     recordings,
-    settings,
   }
 
-  zip.file('metadata.json', JSON.stringify(metadata, null, 2))
+  const settingsBackup: SettingsBackup = {
+    version: 1,
+    appName: 'Maina Voice',
+    exportedAt: new Date().toISOString(),
+    settings: settingsObject,
+  }
 
+  // 1. Write transcriptions.json
+  zip.file('transcriptions.json', JSON.stringify(transcriptionsBackup, null, 2))
+
+  // 2. Write settings.json
+  zip.file('settings.json', JSON.stringify(settingsBackup, null, 2))
+
+  // 3. Write audio WAV files
   const audioFolder = zip.folder('audio')
   if (audioFolder) {
     for (const item of audioBlobs) {
@@ -61,36 +86,68 @@ export async function importBackupArchive(file: File): Promise<{ recordingsCount
   const zip = new JSZip()
   const zipContent = await zip.loadAsync(file)
 
-  const metadataFile = zipContent.file('metadata.json')
-  if (!metadataFile) {
-    throw new Error('Invalid backup file: metadata.json is missing.')
+  let recordings: any[] = []
+  let settingsMap: Record<string, any> = {}
+
+  // 1. Read Transcriptions (try transcriptions.json first, fallback to metadata.json for legacy backups)
+  const transcriptionsFile = zipContent.file('transcriptions.json') || zipContent.file('metadata.json')
+  if (!transcriptionsFile) {
+    throw new Error('Invalid backup file: transcriptions.json or metadata.json is missing.')
   }
 
-  const metadataText = await metadataFile.async('text')
-  const metadata: BackupMetadata = JSON.parse(metadataText)
+  const transcriptionsText = await transcriptionsFile.async('text')
+  const parsedTranscriptions = JSON.parse(transcriptionsText)
 
-  if (!metadata.recordings || !Array.isArray(metadata.recordings)) {
-    throw new Error('Invalid backup format: recordings array is missing.')
+  if (parsedTranscriptions.recordings && Array.isArray(parsedTranscriptions.recordings)) {
+    recordings = parsedTranscriptions.recordings
+  }
+
+  // Check if legacy metadata.json contained settings array
+  if (parsedTranscriptions.settings) {
+    if (Array.isArray(parsedTranscriptions.settings)) {
+      for (const item of parsedTranscriptions.settings) {
+        if (item.key)
+          settingsMap[item.key] = item.value
+      }
+    }
+    else if (typeof parsedTranscriptions.settings === 'object') {
+      settingsMap = { ...parsedTranscriptions.settings }
+    }
+  }
+
+  // 2. Read Settings (from dedicated settings.json if present)
+  const settingsFile = zipContent.file('settings.json')
+  if (settingsFile) {
+    const settingsText = await settingsFile.async('text')
+    const parsedSettings = JSON.parse(settingsText)
+    if (parsedSettings.settings && typeof parsedSettings.settings === 'object') {
+      if (Array.isArray(parsedSettings.settings)) {
+        for (const item of parsedSettings.settings) {
+          if (item.key)
+            settingsMap[item.key] = item.value
+        }
+      }
+      else {
+        settingsMap = { ...settingsMap, ...parsedSettings.settings }
+      }
+    }
   }
 
   // Clear existing database state before restoring backup (Overwrite policy)
   await dbClearAllData()
 
-  // 1. Restore Recordings
-  for (const recording of metadata.recordings) {
+  // 3. Restore Recordings
+  for (const recording of recordings) {
     await dbSaveRecording(recording)
   }
 
-  // 2. Restore Settings
-  if (metadata.settings && Array.isArray(metadata.settings)) {
-    for (const setting of metadata.settings) {
-      if (setting.key) {
-        await dbSetSetting(setting.key, setting.value)
-      }
-    }
+  // 4. Restore Settings to IndexedDB
+  const settingKeys = Object.keys(settingsMap)
+  for (const key of settingKeys) {
+    await dbSetSetting(key, settingsMap[key])
   }
 
-  // 3. Restore Audio Blobs
+  // 5. Restore Audio Blobs
   const audioFolder = zip.folder('audio')
   if (audioFolder) {
     const audioFiles = audioFolder.file(/\.wav$/)
@@ -105,8 +162,8 @@ export async function importBackupArchive(file: File): Promise<{ recordingsCount
   }
 
   return {
-    recordingsCount: metadata.recordings.length,
-    settingsCount: metadata.settings ? metadata.settings.length : 0,
+    recordingsCount: recordings.length,
+    settingsCount: settingKeys.length,
   }
 }
 
