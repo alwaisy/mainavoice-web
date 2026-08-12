@@ -1,6 +1,6 @@
 # Maina Voice
 
-A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text engines, and compare their speed and accuracy side by side. Everything stays local — no server, no account, no sync.
+A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text engines, and compare their speed and accuracy side by side. Everything stays local: no server, no account, no background telemetry.
 
 By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
@@ -12,65 +12,61 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 ## What it does
 
-**Record mode** — pick a speech engine, record your voice, and get a transcription back. You can re-transcribe the same recording with a different engine to compare outputs without re-recording.
+**Record mode**: Pick a speech engine, record your voice, and get a transcript. Re-transcribe the same recording with another engine whenever you want to compare outputs without speaking twice.
 
-**Benchmark mode** — run two engines on the same audio at the same time and see which one finishes first, with a relative speed ratio between them.
+**Benchmark mode**: Run two engines on the same audio clip simultaneously to see which finishes first and check the exact speed ratio between them.
 
-**History** — every transcription is saved locally with version tracking. If you re-transcribe, the old version is kept. You can diff them, copy them, or delete them.
+**History**: Saves every transcription locally with full version tracking. Re-transcribe as many times as you like without losing older attempts. You can diff, copy, or clean them up anytime.
 
-**Backup and restore** — export everything (recordings, transcriptions, settings) as a ZIP archive. The filename includes your local time and IANA timezone so you can tell backups apart at a glance.
+**Backup and restore**: Export your recordings, transcripts, and settings to a ZIP archive. Filenames include your local time and timezone so you always know when a backup was taken.
 
-## Usage Analytics & Cost Analysis
+## Usage analytics & cost analysis
 
 ![Usage Analytics](./docs/images/usage-analytics.png)
 
-### Word-by-Word Cost Breakdown: Wispr Flow vs. Maina Voice
+### Word-by-word cost breakdown: Wispr Flow vs. Maina Voice
 
-| Usage Scale | Monthly Words | Estimated Audio Time | **Wispr Flow Pro** | **Maina Voice (OpenRouter API)** | **Your Monthly Savings** |
+| Usage scale | Monthly words | Estimated audio time | Wispr Flow Pro | Maina Voice (OpenRouter API) | Your monthly savings |
 | --- | --- | --- | --- | --- | --- |
-| **Light Dictation** | **2,000 words** | ~15 minutes | **\$0.00** *(Free Tier Cap Limit)* | **~\$0.05** | *Free tier limit hit on Flow* |
-| **Casual User** | **10,000 words** | ~1.2 hours | **\$15.00** / mo ($180/yr) | **~\$0.27** | **Save \$14.73 / month (98.2%)** |
-| **Power Dictator** | **30,000 words** | ~3.5 hours | **\$15.00** / mo ($180/yr) | **~\$0.81** | **Save \$14.19 / month (94.6%)** |
-| **Heavy Professional** | **100,000 words** | ~12 hours | **\$15.00** / mo ($180/yr) | **~\$2.70** | **Save \$12.30 / month (82.0%)** |
-| **Enterprise / Heavy** | **250,000 words** | ~30 hours | **\$15.00** + Team upsell | **~\$6.75** | **Save \$8.25 / month (55.0%)** |
+| **Light dictation** | **2,000 words** | ~15 minutes | **\$0.00** *(Free tier cap limit)* | **~\$0.05** | *Free tier cap hit on Flow* |
+| **Casual user** | **10,000 words** | ~1.2 hours | **\$15.00** / mo ($180/yr) | **~\$0.27** | **Save \$14.73 / month (98.2%)** |
+| **Power dictator** | **30,000 words** | ~3.5 hours | **\$15.00** / mo ($180/yr) | **~\$0.81** | **Save \$14.19 / month (94.6%)** |
+| **Heavy professional** | **100,000 words** | ~12 hours | **\$15.00** / mo ($180/yr) | **~\$2.70** | **Save \$12.30 / month (82.0%)** |
+| **Enterprise / Heavy** | **250,000 words** | ~30 hours | **\$15.00** + team upsell | **~\$6.75** | **Save \$8.25 / month (55.0%)** |
 
-> *Note: Maina Voice costs calculated based on real benchmarked usage from the dashboard above (~2,594 words processed for \$0.07 across models like OpenAI GPT-Transcribe, Fish Audio Transcribe-1, Deepgram Nova-3, and NVIDIA Parakeet).*
+> *Note: Maina Voice costs come directly from live benchmarked usage in the dashboard image above (~2,594 words processed for \$0.07 across OpenAI GPT-Transcribe, Fish Audio Transcribe-1, Deepgram Nova-3, and NVIDIA Parakeet).*
 
-### Key Advantages over Wispr Flow
+### Why Maina Voice beats Wispr Flow
 
-1. **Pay ONLY for What You Use**: Wispr Flow forces a **\$15/month (\$144/year)** subscription lock-in regardless of whether you transcribe 500 words or 50,000 words in a month. With Maina Voice, light users spend literally **pennies per month**.
-2. **No Word Caps or Artificial Paywalls**: Wispr Flow limits free users to **2,000 words per week** (~15 minutes of speech total). Maina Voice has zero word limits — you use your own OpenRouter key directly.
-3. **Multi-Engine Benchmarking & Choice**: Wispr Flow locks you into a single proprietary pipeline. Maina Voice gives you 4+ world-class speech models (OpenAI, Deepgram, NVIDIA, Fish Audio) with side-by-side speed and accuracy benchmarking.
-4. **100% Data Privacy & Local Storage**: Wispr Flow requires cloud account sync and telemetry. Maina Voice stores all audio, transcriptions, and edit history in browser **IndexedDB** locally — nothing leaves your device except direct HTTPS API calls to your chosen speech provider.
+1. **Pay only for what you use**: Wispr Flow charges **\$15/month (\$144/year)** regardless of whether you speak 500 words or 50,000 words. Maina Voice uses pay-as-you-go pricing, so light users pay cents instead of a full monthly bill.
+2. **No word caps or forced upgrades**: Wispr Flow caps free accounts at **2,000 words per week** (roughly 15 minutes of audio). Maina Voice puts no limits on your usage because you connect your own OpenRouter key directly.
+3. **Multi-engine benchmarking**: Wispr Flow ties you to a single closed stack. Maina Voice lets you choose between 4+ providers (OpenAI, Deepgram, NVIDIA, Fish Audio) and benchmark them head-to-head.
+4. **Local data storage**: Wispr Flow syncs your audio and text to cloud servers under a user account. Maina Voice stores everything in your browser's IndexedDB. Audio goes straight to OpenRouter over HTTPS and nowhere else.
 
-### How the Audio-to-Word Calculation Works (The Math & Framework)
+### How the audio-to-word math works
 
-If someone asks **"How did you convert word count to audio time, and vice versa?"**, here is the exact empirical framework and formula used in Maina Voice:
+If someone asks how word counts translate into audio duration:
 
-#### 1. The Speech Rate Standard (WPM & WPS)
-- **Natural Dictation Speed**: Standard conversational dictation ranges between **140 to 160 Words Per Minute (WPM)**.
-- **Conversion Factor**:
-  $$\text{Words Per Second (WPS)} = \frac{150\text{ WPM}}{60\text{ seconds}} = 2.5\text{ words/sec}$$
-  $$\text{Audio Seconds per Word} = \frac{1}{2.5} = 0.4\text{ seconds/word}$$
+#### 1. Speech rate baseline
+Average conversational dictation sits around **150 Words Per Minute (WPM)**.
+- **Words per second (WPS)**: $150 \div 60 = 2.5\text{ words/sec}$
+- **Seconds per word**: $1 \div 2.5 = 0.4\text{ seconds/word}$
 
-#### 2. Conversion Formulas
-
+#### 2. Conversion formulas
 $$\text{Estimated Audio Minutes} = \frac{\text{Total Words}}{150\text{ WPM}}$$
 
 $$\text{Estimated Words} = \text{Audio Seconds} \times 2.5$$
 
-#### 3. Empirical Cost Benchmark (From Live Data)
+#### 3. Real cost benchmarks from live data
+- **Sample run**: 24 runs, **2,594 words**, total audio ~365 seconds (~6.08 minutes).
+- **Total OpenRouter cost**: **\$0.07 total** across all four models.
+- **Unit metrics**:
+  $$\text{Cost per 1,000 words} = \frac{\$0.07}{2,594} \times 1,000 = \$0.027$$
+  $$\text{Cost per minute of audio} = \frac{\$0.07}{6.08\text{ mins}} = \$0.0115$$
 
-Our calculation is grounded directly in the live data captured in the telemetry dashboard above:
-- **Sample Data**: 24 runs, **2,594 words**, total audio ~365 seconds (~6.08 minutes).
-- **Recorded Cost**: **\$0.07 total** across OpenRouter models (OpenAI GPT-Transcribe, Fish Audio Transcribe-1, Deepgram Nova-3, NVIDIA Parakeet).
-- **Unit Cost Metric**:
-  $$\text{Cost per 1,000 Words} = \frac{\$0.07}{2,594} \times 1,000 = \$0.02699\quad (\sim \$0.027\text{ per 1k words})$$
-  $$\text{Cost per Minute of Audio} = \frac{\$0.07}{6.08\text{ mins}} = \$0.0115\quad (\sim \$0.011\text{ per minute})$$
+#### 4. Real-world cost comparison
 
-#### 4. Real-World Projection Matrix
-
-| Category | Words / Month | Formula Calculation | Estimated Audio Time | OpenRouter Cost (Maina) | Wispr Flow Flat Fee |
+| Category | Words / Month | Formula | Audio Time | Maina Voice (OpenRouter API) | Wispr Flow Flat Fee |
 | --- | --- | --- | --- | --- | --- |
 | **Casual** | 10,000 words | $10,000 \div 150\text{ WPM}$ | ~66.6 mins (~1.1 hrs) | **~\$0.27** | **\$15.00** |
 | **Moderate** | 30,000 words | $30,000 \div 150\text{ WPM}$ | ~200 mins (~3.3 hrs) | **~\$0.81** | **\$15.00** |
@@ -78,7 +74,7 @@ Our calculation is grounded directly in the live data captured in the telemetry 
 
 ## Supported engines
 
-All transcription goes through [OpenRouter](https://openrouter.ai), so you only need one API key to access all of them:
+All transcription calls route through [OpenRouter](https://openrouter.ai), meaning you only need one API key for every model:
 
 - Fish Audio Transcribe-1
 - OpenAI GPT-Transcribe
@@ -113,7 +109,7 @@ pnpm install
 pnpm dev
 ```
 
-Open the app in your browser, go to Settings, and paste your OpenRouter API key. That is all the setup there is.
+Open the app in your browser, head to Settings, and paste your OpenRouter API key.
 
 ### Build for production
 
@@ -142,29 +138,29 @@ public/         Static assets, icons, PWA manifest
 
 ## How the audio pipeline works
 
-The browser's `MediaRecorder` API captures microphone input as WebM or Ogg depending on the platform. Before sending to any cloud provider, `transcription-service.ts` decodes the audio and re-encodes it as 16-bit PCM WAV using the Web Audio API. This normalizes the format across browsers and avoids provider-specific rejection errors.
+The browser's `MediaRecorder` API captures microphone input as WebM or Ogg depending on the platform. Before sending audio to any provider, `transcription-service.ts` decodes it and re-encodes it to 16-bit PCM WAV via the Web Audio API. This standardizes audio input across browsers and prevents format-related API rejections.
 
-Transcriptions go to OpenRouter's `/v1/audio/transcriptions` endpoint. The selected model determines which provider handles the request.
+Transcriptions are sent to OpenRouter's `/v1/audio/transcriptions` endpoint, where your chosen model processes the request.
 
 ## Data and privacy
 
-Nothing leaves your device except the audio you explicitly send for transcription. Recordings, transcriptions, and settings are stored in IndexedDB under the key `mainavoice_indexeddb`. There is no telemetry, no analytics, and no external database.
+Your audio only leaves your device when you explicitly submit a recording for transcription. All recordings, transcripts, and configuration settings stay in IndexedDB (`mainavoice_indexeddb`). The app runs no telemetry, tracking scripts, or remote database logging.
 
-Your OpenRouter API key is stored in IndexedDB and passed via HTTP `Authorization: Bearer` headers. It never touches any server other than OpenRouter.
+Your OpenRouter API key is stored locally in IndexedDB and attached to requests via HTTP `Authorization: Bearer` headers. It is sent exclusively to OpenRouter endpoints.
 
 ## Transliteration
 
-When the transcribed text contains Devanagari script, Maina Voice can automatically transliterate it to Urdu. This runs offline using a local character mapping in `transliteration-service.ts` and can be toggled per page in Settings.
+When transcribed text includes Devanagari script, Maina Voice can convert it to Urdu. This works offline using a character map in `transliteration-service.ts` and can be enabled or disabled in Settings.
 
 ## Contributing
 
-Run the full check before opening a pull request:
+Run validation before submitting a pull request:
 
 ```bash
 pnpm check   # runs lint:fix, lint, and typecheck in sequence
 ```
 
-Other available commands:
+Available commands:
 
 ```bash
 pnpm dev          # start dev server
@@ -176,13 +172,13 @@ pnpm clean        # remove build artifacts
 pnpm shadcn       # add a Reka UI component
 ```
 
-A few things to know before contributing:
+Contribution guidelines:
 
-- Commits follow [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `chore:`, `docs:`, etc.
-- All PRs must pass `pnpm check` with zero errors.
-- Components use `<script setup>` only. No Options API.
-- Formatting is handled by `@antfu/eslint-config`: 2 spaces, single quotes, no semicolons.
-- State changes go through store actions, not direct mutation.
+- Write commits using [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `chore:`, `docs:`).
+- Keep PRs green with `pnpm check`.
+- Use `<script setup>` syntax exclusively.
+- Follow `@antfu/eslint-config` formatting (2 spaces, single quotes, no semicolons).
+- Route state modifications through Pinia actions.
 
 ## License
 
