@@ -281,7 +281,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="item" class="w-full space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
+  <div
+    v-if="item"
+    class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300"
+    :class="[item.isComparisonSuite ? 'w-full' : 'max-w-[714px] mx-auto']"
+  >
     <!-- Unboxed Navigation Header -->
     <div class="flex items-center justify-between">
       <Button
