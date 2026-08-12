@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Check, Database, Download, Globe, Key, Laptop, Moon, RotateCcw, Sun, Upload } from 'lucide-vue-next'
-import { ref, watch } from 'vue'
+import { BarChart3, Check, Clock, Coins, Database, Download, FileAudio, Globe, Key, Languages, Laptop, Layers, Moon, RotateCcw, Sun, Swords, Upload } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { exportBackupArchive, importBackupArchive, performFactoryReset } from '@/services/backup-service'
@@ -8,6 +8,45 @@ import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const apiKeyInput = ref(store.openRouterApiKey)
+
+const totalRecordings = computed(() => store.history.length)
+const totalVersions = computed(() => store.history.reduce((n, h) => n + h.versions.length, 0))
+const totalWords = computed(() => store.history.reduce((n, h) => n + h.versions.reduce((a, v) => a + (v.wordCount || 0), 0), 0))
+const totalCost = computed(() => store.history.reduce((n, h) => n + h.versions.reduce((a, v) => a + (v.costEstimate || 0), 0), 0))
+const totalLatencyMs = computed(() => store.history.reduce((n, h) => n + h.versions.reduce((a, v) => a + (v.latencyMs || 0), 0), 0))
+const avgLatencyMs = computed(() => totalVersions.value ? Math.round(totalLatencyMs.value / totalVersions.value) : 0)
+const comparisonSuites = computed(() => store.history.filter(h => h.isComparisonSuite).length)
+const translatedCount = computed(() => store.history.reduce((n, h) => n + h.versions.filter(v => !!v.translatedText).length, 0))
+const avgWordsPerVersion = computed(() => totalVersions.value ? Math.round(totalWords.value / totalVersions.value) : 0)
+
+const engineStats = computed(() => {
+  const map = new Map<string, { count: number, words: number, cost: number, latency: number }>()
+  for (const item of store.history) {
+    for (const v of item.versions) {
+      const cur = map.get(v.engineName) || { count: 0, words: 0, cost: 0, latency: 0 }
+      cur.count += 1
+      cur.words += v.wordCount || 0
+      cur.cost += v.costEstimate || 0
+      cur.latency += v.latencyMs || 0
+      map.set(v.engineName, cur)
+    }
+  }
+  return Array.from(map.entries()).map(([engine, s]) => ({
+    engine,
+    shortName: engine.split('/').pop() || engine,
+    ...s,
+    avgLatency: s.count ? Math.round(s.latency / s.count) : 0,
+  })).sort((a, b) => b.count - a.count)
+})
+const maxEngineCount = computed(() => Math.max(1, ...engineStats.value.map(e => e.count)))
+
+function fmtCost(n: number): string {
+  if (n === 0)
+    return '$0.00'
+  if (n < 0.01)
+    return `$${n.toFixed(4)}`
+  return `$${n.toFixed(2)}`
+}
 
 // Keep input synced when store initializes asynchronously from IndexedDB on page reload
 watch(
@@ -344,6 +383,98 @@ async function handleFactoryReset() {
       <div v-if="statusMessage" class="p-3 rounded-lg bg-muted text-xs font-medium text-foreground border border-border">
         {{ statusMessage }}
       </div>
+    </div>
+
+    <!-- 5. Usage Analytics (on-demand, computed from IndexedDB history) -->
+    <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
+      <div class="space-y-1">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <BarChart3 class="w-4 h-4 text-primary" />
+          <span>Usage Analytics</span>
+        </h2>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          Live stats computed on the fly from your local recordings. No tracking — just your data.
+        </p>
+      </div>
+
+      <div v-if="totalVersions === 0" class="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-xs text-muted-foreground">
+        No recordings yet. Record something and your stats will appear here.
+      </div>
+
+      <template v-else>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-1">
+            <div class="flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+              <FileAudio class="w-3 h-3" /> Recordings
+            </div>
+            <div class="text-lg font-bold text-foreground">
+              {{ totalRecordings }}
+            </div>
+            <div class="text-[11px] text-muted-foreground">
+              {{ comparisonSuites }} benchmark suites
+            </div>
+          </div>
+          <div class="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-1">
+            <div class="flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+              <Layers class="w-3 h-3" /> Transcriptions
+            </div>
+            <div class="text-lg font-bold text-foreground">
+              {{ totalVersions }}
+            </div>
+            <div class="text-[11px] text-muted-foreground">
+              {{ totalWords.toLocaleString() }} words · avg {{ avgWordsPerVersion }}/run
+            </div>
+          </div>
+          <div class="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-1">
+            <div class="flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+              <Coins class="w-3 h-3" /> Est. cost
+            </div>
+            <div class="text-lg font-bold text-foreground">
+              {{ fmtCost(totalCost) }}
+            </div>
+            <div class="text-[11px] text-muted-foreground">
+              OpenRouter pricing
+            </div>
+          </div>
+          <div class="rounded-lg border border-border bg-muted/30 px-3 py-3 space-y-1">
+            <div class="flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-muted-foreground">
+              <Clock class="w-3 h-3" /> Avg latency
+            </div>
+            <div class="text-lg font-bold text-foreground">
+              {{ store.formatDuration(avgLatencyMs) }}
+            </div>
+            <div class="text-[11px] text-muted-foreground">
+              per run · total {{ store.formatDuration(totalLatencyMs) }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 text-[11px] text-muted-foreground pt-1">
+          <span class="inline-flex items-center gap-1"><Languages class="w-3 h-3" /> {{ translatedCount }} translated</span>
+          <span class="text-border">·</span>
+          <span class="inline-flex items-center gap-1"><Swords class="w-3 h-3" /> {{ comparisonSuites }} compares</span>
+        </div>
+
+        <div v-if="engineStats.length" class="space-y-2 pt-2 border-t border-border/60">
+          <div class="text-[11px] font-bold text-foreground">
+            By engine
+          </div>
+          <div class="space-y-2">
+            <div v-for="row in engineStats" :key="row.engine" class="space-y-1">
+              <div class="flex items-center justify-between gap-3 text-xs">
+                <span class="font-semibold text-foreground truncate">{{ row.shortName }}</span>
+                <span class="text-muted-foreground shrink-0 tabular-nums">{{ row.count }} runs · {{ row.words.toLocaleString() }} words · {{ fmtCost(row.cost) }} · {{ store.formatDuration(row.avgLatency) }} avg</span>
+              </div>
+              <div class="h-1.5 rounded-full bg-muted overflow-hidden">
+                <div class="h-full rounded-full bg-primary transition-all" :style="{ width: `${Math.round((row.count / maxEngineCount) * 100)}%` }" />
+              </div>
+              <div class="text-[10px] text-muted-foreground truncate">
+                {{ row.engine }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- Unboxed Clean Footer -->
