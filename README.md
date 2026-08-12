@@ -1,6 +1,6 @@
 # Maina Voice
 
-A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text engines, and compare their speed and accuracy side by side. Everything stays local: no server, no account, no background telemetry.
+A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text models, and compare their speed and accuracy side by side. Everything stays local: no server, no account, no background telemetry.
 
 By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
@@ -12,9 +12,9 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 ## What it does
 
-**Record mode**: Pick a speech engine, record your voice, and get a transcript. Re-transcribe the same recording with another engine whenever you want to compare outputs without speaking twice.
+**Record mode**: Pick a speech model, record your voice, and get a transcript. Re-transcribe the same recording with another model whenever you want to compare outputs without speaking twice.
 
-**Benchmark mode**: Run two engines on the same audio clip simultaneously to see which finishes first and check the exact speed ratio between them.
+**Benchmark mode**: Run multiple models on the same audio clip simultaneously to see which finishes first and check the exact speed ratio between them.
 
 **History**: Saves every transcription locally with full version tracking. Re-transcribe as many times as you like without losing older attempts. You can diff, copy, or clean them up anytime.
 
@@ -40,7 +40,7 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 1. **Pay only for what you use**: Wispr Flow charges **\$15/month (\$144/year)** regardless of whether you speak 500 words or 50,000 words. Maina Voice uses pay-as-you-go pricing, so light users pay cents instead of a full monthly bill.
 2. **No word caps or forced upgrades**: Wispr Flow caps free accounts at **2,000 words per week** (roughly 15 minutes of audio). Maina Voice puts no limits on your usage because you connect your own OpenRouter key directly.
-3. **Multi-engine benchmarking**: Wispr Flow ties you to a single closed stack. Maina Voice lets you choose between 4+ providers (OpenAI, Deepgram, NVIDIA, Fish Audio) and benchmark them head-to-head.
+3. **Multi-model benchmarking**: Wispr Flow ties you to a single closed stack. Maina Voice lets you choose between 4+ providers (OpenAI, Deepgram, NVIDIA, Fish Audio) and benchmark them head-to-head.
 4. **Local data storage**: Wispr Flow syncs your audio and text to cloud servers under a user account. Maina Voice stores everything in your browser's IndexedDB. Audio goes straight to OpenRouter over HTTPS and nowhere else.
 
 ### How the audio-to-word math works
@@ -72,13 +72,13 @@ $$\text{Estimated Words} = \text{Audio Seconds} \times 2.5$$
 | **Moderate** | 30,000 words | $30,000 \div 150\text{ WPM}$ | ~200 mins (~3.3 hrs) | **~\$0.81** | **\$15.00** |
 | **Heavy** | 100,000 words | $100,000 \div 150\text{ WPM}$ | ~666 mins (~11.1 hrs) | **~\$2.70** | **\$15.00** |
 
-## Supported engines & price analysis
+## Supported models & price analysis
 
 All standard transcription calls in Maina Voice currently route through [OpenRouter](https://openrouter.ai), allowing single API key access across models.
 
-### Engine pricing comparison
+### Model pricing comparison
 
-| Engine Model | Provider | Latency Grade | Accuracy Grade | Cost per Min | Cost per Hour | Relative Price |
+| Speech Model | Provider | Latency Grade | Accuracy Grade | Cost per Min | Cost per Hour | Relative Price |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Parakeet TDT v3** | NVIDIA | Ultra-Fast | High | **$0.0035** | **$0.210** | 🟢 Lowest (OpenRouter) |
 | **Transcribe-1** | Fish Audio | Fast | Very High | **$0.0038** | **$0.228** | 🟢 Moderate |
@@ -86,13 +86,13 @@ All standard transcription calls in Maina Voice currently route through [OpenRou
 | **GPT-Transcribe** | OpenAI | Fast | State-of-the-Art | **$0.0045** | **$0.270** | 🔴 Highest (OpenRouter) |
 | *Whisper Large v3 Turbo (Planned)* | *Groq* | *Blazing* | *Very High* | ***$0.00067*** | ***$0.040*** | ⚡ **Cheapest (~9x cheaper)** |
 
-> **Key takeaway**: While OpenRouter provides convenient single-key access across major cloud engines, direct LPUs (like Groq's custom hardware platform) can execute Whisper Large v3 Turbo for **$0.04/hr**—making it up to 9x cheaper than standard cloud provider rates and offering a generous free tier of up to **2,000 free transcriptions per day**.
+> **Key takeaway**: While OpenRouter provides convenient single-key access across major cloud models, direct LPUs (like Groq's custom hardware platform) can execute Whisper Large v3 Turbo for **$0.04/hr**—making it up to 9x cheaper than standard cloud provider rates and offering a generous free tier of up to **2,000 free transcriptions per day**.
 
 ## What's Next / Roadmap
 
 We are continuously expanding Maina Voice to give users the fastest, most cost-effective local-first speech workstation:
 
-- [ ] **Groq LPU Engine Integration**: Support direct Groq API keys (`https://api.groq.com/openai/v1/audio/transcriptions`) to enable ultra-fast, sub-300ms Whisper Large v3 & Turbo transcriptions at $0.04/hr (and free tier support up to 2,000 requests/day).
+- [ ] **Groq LPU Model Integration**: Support direct Groq API keys (`https://api.groq.com/openai/v1/audio/transcriptions`) to enable ultra-fast, sub-300ms Whisper Large v3 & Turbo transcriptions at $0.04/hr (and free tier support up to 2,000 requests/day).
 - [ ] **Custom OpenAI-Compatible Endpoints**: Allow users to specify custom API Base URLs (for local Ollama, vLLM, or self-hosted Whisper microservices).
 - [ ] **Global Hotkey Dictation**: Desktop system-wide hold-to-talk keybindings for immediate pasting into active windows.
 - [ ] **Advanced LLM Post-Processing & Cleanup**: Custom background cleanup prompts for fixing punctuation, filler words ("uh", "um"), and domain jargon using local or cloud LLMs.
