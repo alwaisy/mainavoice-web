@@ -43,10 +43,38 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 3. **Multi-Engine Benchmarking & Choice**: Wispr Flow locks you into a single proprietary pipeline. Maina Voice gives you 4+ world-class speech models (OpenAI, Deepgram, NVIDIA, Fish Audio) with side-by-side speed and accuracy benchmarking.
 4. **100% Data Privacy & Local Storage**: Wispr Flow requires cloud account sync and telemetry. Maina Voice stores all audio, transcriptions, and edit history in browser **IndexedDB** locally — nothing leaves your device except direct HTTPS API calls to your chosen speech provider.
 
-### Real-World Performance & Expectations
+### How the Audio-to-Word Calculation Works (The Math & Framework)
 
-- **Cost Efficiency**: Real telemetry from 24 benchmark runs (2,594 words) averaged **\$0.0029 per 100 words**.
-- **Latency**: Audio conversion to 16-bit PCM WAV happens client-side via Web Audio API, with OpenRouter processing completing in **12s - 17s avg** per batch run.
+If someone asks **"How did you convert word count to audio time, and vice versa?"**, here is the exact empirical framework and formula used in Maina Voice:
+
+#### 1. The Speech Rate Standard (WPM & WPS)
+- **Natural Dictation Speed**: Standard conversational dictation ranges between **140 to 160 Words Per Minute (WPM)**.
+- **Conversion Factor**:
+  $$\text{Words Per Second (WPS)} = \frac{150\text{ WPM}}{60\text{ seconds}} = 2.5\text{ words/sec}$$
+  $$\text{Audio Seconds per Word} = \frac{1}{2.5} = 0.4\text{ seconds/word}$$
+
+#### 2. Conversion Formulas
+
+$$\text{Estimated Audio Minutes} = \frac{\text{Total Words}}{150\text{ WPM}}$$
+
+$$\text{Estimated Words} = \text{Audio Seconds} \times 2.5$$
+
+#### 3. Empirical Cost Benchmark (From Live Data)
+
+Our calculation is grounded directly in the live data captured in the telemetry dashboard above:
+- **Sample Data**: 24 runs, **2,594 words**, total audio ~365 seconds (~6.08 minutes).
+- **Recorded Cost**: **\$0.07 total** across OpenRouter models (OpenAI GPT-Transcribe, Fish Audio Transcribe-1, Deepgram Nova-3, NVIDIA Parakeet).
+- **Unit Cost Metric**:
+  $$\text{Cost per 1,000 Words} = \frac{\$0.07}{2,594} \times 1,000 = \$0.02699\quad (\sim \$0.027\text{ per 1k words})$$
+  $$\text{Cost per Minute of Audio} = \frac{\$0.07}{6.08\text{ mins}} = \$0.0115\quad (\sim \$0.011\text{ per minute})$$
+
+#### 4. Real-World Projection Matrix
+
+| Category | Words / Month | Formula Calculation | Estimated Audio Time | OpenRouter Cost (Maina) | Wispr Flow Flat Fee |
+| --- | --- | --- | --- | --- | --- |
+| **Casual** | 10,000 words | $10,000 \div 150\text{ WPM}$ | ~66.6 mins (~1.1 hrs) | **~\$0.27** | **\$15.00** |
+| **Moderate** | 30,000 words | $30,000 \div 150\text{ WPM}$ | ~200 mins (~3.3 hrs) | **~\$0.81** | **\$15.00** |
+| **Heavy** | 100,000 words | $100,000 \div 150\text{ WPM}$ | ~666 mins (~11.1 hrs) | **~\$2.70** | **\$15.00** |
 
 ## Supported engines
 
