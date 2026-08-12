@@ -14,16 +14,6 @@ export interface ModelInfo {
 
 export const ALL_MODELS: ModelInfo[] = [
   {
-    id: 'groq/whisper-large-v3-turbo',
-    name: 'Groq Whisper Large v3 Turbo',
-    provider: 'Groq',
-    costPerMin: 0.00067,
-    latencyGrade: 'ultra-fast',
-    accuracyGrade: 'very-high',
-    description: 'Blazing sub-300ms LPU transcription at $0.04/hr with a generous free tier.',
-    badge: 'Cheapest & Fastest',
-  },
-  {
     id: 'fish-audio/transcribe-1',
     name: 'Fish Audio Transcribe-1',
     provider: 'Fish Audio',
@@ -31,7 +21,7 @@ export const ALL_MODELS: ModelInfo[] = [
     latencyGrade: 'fast',
     accuracyGrade: 'very-high',
     description: 'Multilingual speech recognition with broad language support.',
-    badge: 'Popular',
+    badge: 'Best Accuracy & Winner',
   },
   {
     id: 'openai/gpt-transcribe',
@@ -41,6 +31,16 @@ export const ALL_MODELS: ModelInfo[] = [
     latencyGrade: 'fast',
     accuracyGrade: 'state-of-the-art',
     description: 'High-accuracy whisper & multimodal transcription engine.',
+  },
+  {
+    id: 'groq/whisper-large-v3-turbo',
+    name: 'Groq Whisper Large v3 Turbo',
+    provider: 'Groq',
+    costPerMin: 0.00067,
+    latencyGrade: 'ultra-fast',
+    accuracyGrade: 'very-high',
+    description: 'Blazing sub-300ms LPU transcription at $0.04/hr with a generous free tier.',
+    badge: 'Cheapest & Fastest',
   },
   {
     id: 'deepgram/nova-3',
