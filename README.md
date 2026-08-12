@@ -92,7 +92,7 @@ Maina Voice connects to both [OpenRouter](https://openrouter.ai) and direct prov
 
 We are continuously benchmarking and expanding Maina Voice to evaluate the absolute best speech-to-text APIs in the industry:
 
-- [ ] **Benchmark & Integrate Top STT APIs (Gladia, etc.)**: Benchmark and evaluate industry leaders (referencing [Gladia's Speech-to-Text API landscape study](https://www.gladia.io/blog/best-speech-to-text-apis)) to integrate the highest-accuracy real-time engines.
+- [ ] **Benchmark & Integrate Top STT APIs (Gladia, etc.)**: Benchmark and evaluate industry leaders (as discussed in [Awais Alwaisy's update](https://x.com/alvaisy/status/2063534975853670573) and [Gladia's STT API landscape study](https://www.gladia.io/blog/best-speech-to-text-apis)) to integrate the highest-accuracy real-time engines.
 - [x] **Groq LPU Direct Integration**: Native support for Groq API keys (`https://api.groq.com/openai/v1/audio/transcriptions`) for $0.04/hr Whisper Large v3 Turbo transcriptions.
 - [ ] **Custom OpenAI-Compatible Endpoints**: Allow users to specify custom API Base URLs (for local Ollama, vLLM, or self-hosted Whisper microservices).
 - [ ] **Global Hotkey Dictation**: Desktop system-wide hold-to-talk keybindings for immediate pasting into active windows.
