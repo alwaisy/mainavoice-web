@@ -16,10 +16,10 @@ const modelCount = ref<2 | 3 | 4 | 5>(5)
 // Selected models for up to 5 comparison workbenches
 const selectedModels = ref<string[]>([
   'groq/whisper-large-v3-turbo',
+  'fish-audio/transcribe-1',
   'openai/gpt-transcribe',
   'deepgram/nova-3',
   'nvidia/parakeet-tdt-0.6b-v3',
-  'fish-audio/transcribe-1',
 ])
 
 // Results array for up to 5 models
