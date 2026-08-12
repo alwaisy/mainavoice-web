@@ -11,7 +11,7 @@ import { useMainaStore } from '@/stores/maina-store'
 const store = useMainaStore()
 
 // Model slots count (2, 3, 4, or 5)
-const modelCount = ref<2 | 3 | 4>(4)
+const modelCount = ref<2 | 3 | 4 | 5>(5)
 
 // Selected models for up to 5 comparison workbenches
 const selectedModels = ref<string[]>([
@@ -307,6 +307,14 @@ onUnmounted(() => {
           @click="modelCount = 4"
         >
           4 Models
+        </Button>
+        <Button
+          size="sm"
+          :variant="modelCount === 5 ? 'default' : 'ghost'"
+          class="h-7 text-xs font-bold px-3 cursor-pointer"
+          @click="modelCount = 5"
+        >
+          5 Models
         </Button>
       </div>
     </div>
