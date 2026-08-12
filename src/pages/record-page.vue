@@ -210,15 +210,18 @@ function saveAudio() {
 }
 
 function saveTranscript() {
-  if (!activeResult.value?.text)
+  const textToSave = activeTab.value === 'english' && activeResult.value?.translatedText
+    ? activeResult.value.translatedText
+    : activeResult.value?.text
+  if (!textToSave)
     return
   try {
     isSavingText.value = true
-    const blob = new Blob([activeResult.value.text], { type: 'text/plain;charset=utf-8' })
+    const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `transcript_${Date.now()}.txt`
+    a.download = `transcript_${activeTab.value}_${Date.now()}.txt`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -239,9 +242,12 @@ function formatTimer(seconds: number) {
 }
 
 function copyTranscript() {
-  if (!activeResult.value?.text)
+  const textToCopy = activeTab.value === 'english' && activeResult.value?.translatedText
+    ? activeResult.value.translatedText
+    : activeResult.value?.text
+  if (!textToCopy)
     return
-  navigator.clipboard.writeText(activeResult.value.text)
+  navigator.clipboard.writeText(textToCopy)
   isCopied.value = true
   setTimeout(() => (isCopied.value = false), 2000)
 }
@@ -424,18 +430,6 @@ onUnmounted(() => {
             <DollarSign class="w-3 h-3 text-green-600" />
             ${{ activeResult.costEstimate.toFixed(4) }}
           </span>
-
-          <!-- Translate Button if not translated yet -->
-          <Button
-            v-if="!activeResult.translatedText"
-            variant="secondary"
-            size="sm"
-            class="h-7 text-xs font-bold cursor-pointer border border-border"
-            :disabled="isTranslating"
-            @click="handleTranslate"
-          >
-            <span>{{ isTranslating ? 'Translating...' : '🌐 Translate to English' }}</span>
-          </Button>
 
           <!-- Feature 3: Download Audio .wav Button -->
           <Button
