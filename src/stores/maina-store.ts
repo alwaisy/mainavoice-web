@@ -53,7 +53,8 @@ function getLocalStr(key: string, fallback: string): string {
 
 export const useMainaStore = defineStore('maina-store', () => {
   const openRouterApiKey = ref<string>(getLocalStr('openRouterApiKey', ''))
-  const selectedModel = ref<string>(getLocalStr('selectedModel', 'fish-audio/transcribe-1'))
+  const groqApiKey = ref<string>(getLocalStr('groqApiKey', ''))
+  const selectedModel = ref<string>(getLocalStr('selectedModel', 'groq/whisper-large-v3-turbo'))
   const themeMode = ref<ThemeMode>(getLocalStr('themeMode', 'light') as ThemeMode)
   const history = ref<RecordingHistoryItem[]>([])
   const isInitialized = ref(false)
@@ -70,6 +71,11 @@ export const useMainaStore = defineStore('maina-store', () => {
     if (typeof window !== 'undefined')
       window.localStorage.setItem('openRouterApiKey', val)
     dbSetSetting('openRouterApiKey', val)
+  })
+  watch(groqApiKey, (val) => {
+    if (typeof window !== 'undefined')
+      window.localStorage.setItem('groqApiKey', val)
+    dbSetSetting('groqApiKey', val)
   })
   watch(selectedModel, (val) => {
     if (typeof window !== 'undefined')
@@ -117,6 +123,12 @@ export const useMainaStore = defineStore('maina-store', () => {
         openRouterApiKey.value = key
         if (typeof window !== 'undefined')
           window.localStorage.setItem('openRouterApiKey', key)
+      }
+      const gKey = await dbGetSetting<string>('groqApiKey')
+      if (gKey !== undefined && gKey !== '') {
+        groqApiKey.value = gKey
+        if (typeof window !== 'undefined')
+          window.localStorage.setItem('groqApiKey', gKey)
       }
       if (theme !== undefined) {
         themeMode.value = theme
@@ -196,6 +208,11 @@ export const useMainaStore = defineStore('maina-store', () => {
   async function setApiKey(key: string) {
     openRouterApiKey.value = key
     await dbSetSetting('openRouterApiKey', key)
+  }
+
+  async function setGroqApiKey(key: string) {
+    groqApiKey.value = key
+    await dbSetSetting('groqApiKey', key)
   }
 
   async function setSelectedModel(model: string) {
@@ -344,6 +361,7 @@ export const useMainaStore = defineStore('maina-store', () => {
 
   return {
     openRouterApiKey,
+    groqApiKey,
     selectedModel,
     themeMode,
     autoTranslateRecord,
@@ -354,6 +372,7 @@ export const useMainaStore = defineStore('maina-store', () => {
     initStore,
     setThemeMode,
     setApiKey,
+    setGroqApiKey,
     setSelectedModel,
     setAutoTranslateRecord,
     setAutoTranslateCompare,

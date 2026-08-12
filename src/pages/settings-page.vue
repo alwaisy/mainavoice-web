@@ -8,6 +8,7 @@ import { useMainaStore } from '@/stores/maina-store'
 
 const store = useMainaStore()
 const apiKeyInput = ref(store.openRouterApiKey)
+const groqKeyInput = ref(store.groqApiKey)
 
 const totalRecordings = computed(() => store.history.length)
 const totalVersions = computed(() => store.history.reduce((n, h) => n + h.versions.length, 0))
@@ -58,7 +59,17 @@ watch(
   },
   { immediate: true },
 )
+watch(
+  () => store.groqApiKey,
+  (newKey) => {
+    if (newKey && !groqKeyInput.value) {
+      groqKeyInput.value = newKey
+    }
+  },
+  { immediate: true },
+)
 const isSaved = ref(false)
+const isGroqSaved = ref(false)
 
 const isExporting = ref(false)
 const isImporting = ref(false)
@@ -71,6 +82,14 @@ function handleSaveKey() {
   isSaved.value = true
   setTimeout(() => {
     isSaved.value = false
+  }, 2000)
+}
+
+function handleSaveGroqKey() {
+  store.setGroqApiKey(groqKeyInput.value)
+  isGroqSaved.value = true
+  setTimeout(() => {
+    isGroqSaved.value = false
   }, 2000)
 }
 
@@ -287,7 +306,7 @@ async function handleFactoryReset() {
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-foreground mb-1.5">
-            API Key
+            OpenRouter API Key
           </label>
           <input
             v-model="apiKeyInput"
@@ -317,6 +336,56 @@ async function handleFactoryReset() {
           >
             <Check v-if="isSaved" class="w-3.5 h-3.5 text-emerald-400" />
             <span>{{ isSaved ? 'Saved' : 'Save Key' }}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3b. Groq API Key Card -->
+    <div class="rounded-xl border border-border bg-card p-6 space-y-4 shadow-xs">
+      <div class="space-y-1">
+        <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
+          <Zap class="w-4 h-4 text-amber-500" />
+          <span>Groq API Key (Optional)</span>
+        </h2>
+        <p class="text-xs text-muted-foreground leading-relaxed">
+          Direct Groq API key for ultra-fast, sub-300ms Whisper Large v3 Turbo transcriptions at $0.04/hr (or 2,000 free requests/day).
+        </p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-foreground mb-1.5">
+            Groq API Key
+          </label>
+          <input
+            v-model="groqKeyInput"
+            type="password"
+            placeholder="gsk_..."
+            class="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border text-xs text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary transition shadow-xs"
+          >
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span
+            v-if="store.groqApiKey"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+          >
+            <Check class="w-3.5 h-3.5" />
+            Groq key saved
+          </span>
+          <span v-else class="text-xs text-muted-foreground">
+            No Groq key saved (will fallback to OpenRouter key if set).
+          </span>
+
+          <Button
+            variant="default"
+            size="sm"
+            class="font-bold cursor-pointer"
+            @click="handleSaveGroqKey"
+          >
+            <Check v-if="isGroqSaved" class="w-3.5 h-3.5 text-emerald-400" />
+            <span>{{ isGroqSaved ? 'Saved' : 'Save Groq Key' }}</span>
           </Button>
         </div>
       </div>

@@ -116,6 +116,7 @@ async function toggleRecording() {
           store.selectedModel,
           store.openRouterApiKey,
           duration,
+          store.groqApiKey,
         )
 
         activeResult.value = result
@@ -173,6 +174,7 @@ async function handleFileChange(event: Event) {
       store.selectedModel,
       store.openRouterApiKey,
       60,
+      store.groqApiKey,
     )
 
     activeResult.value = result

@@ -14,6 +14,16 @@ export interface ModelInfo {
 
 export const ALL_MODELS: ModelInfo[] = [
   {
+    id: 'groq/whisper-large-v3-turbo',
+    name: 'Groq Whisper Large v3 Turbo',
+    provider: 'Groq',
+    costPerMin: 0.00067,
+    latencyGrade: 'ultra-fast',
+    accuracyGrade: 'very-high',
+    description: 'Blazing sub-300ms LPU transcription at $0.04/hr with a generous free tier.',
+    badge: 'Cheapest & Fastest',
+  },
+  {
     id: 'fish-audio/transcribe-1',
     name: 'Fish Audio Transcribe-1',
     provider: 'Fish Audio',
@@ -40,7 +50,6 @@ export const ALL_MODELS: ModelInfo[] = [
     latencyGrade: 'ultra-fast',
     accuracyGrade: 'very-high',
     description: 'Blazing fast low-latency streaming & batch speech engine.',
-    badge: 'Fastest',
   },
   {
     id: 'nvidia/parakeet-tdt-0.6b-v3',
@@ -54,6 +63,7 @@ export const ALL_MODELS: ModelInfo[] = [
 ]
 
 const PRICE_PER_MIN: Record<string, number> = {
+  'groq/whisper-large-v3-turbo': 0.00067,
   'openai/gpt-transcribe': 0.0045,
   'deepgram/nova-3': 0.0043,
   'nvidia/parakeet-tdt-0.6b-v3': 0.0035,
@@ -127,16 +137,21 @@ async function audioBlobToWavBlob(blob: Blob): Promise<Blob> {
 export async function transcribeAudio(
   audioFilePath: string,
   modelId: string,
-  apiKey: string,
+  openRouterApiKey: string,
   durationSeconds: number = 5,
+  groqApiKey?: string,
 ): Promise<TranscriptionVersion> {
   const startTime = Date.now()
 
-  if (!apiKey || apiKey.trim() === '') {
+  const isGroqModel = modelId.startsWith('groq/')
+  const effectiveApiKey = isGroqModel ? (groqApiKey || openRouterApiKey) : openRouterApiKey
+
+  if (!effectiveApiKey || effectiveApiKey.trim() === '') {
+    const keyName = isGroqModel ? 'Groq API Key (or OpenRouter Key)' : 'OpenRouter API Key'
     return {
       versionNumber: 1,
       engineName: modelId,
-      text: 'Please set your OpenRouter API Key in Settings to transcribe audio using cloud AI models.',
+      text: `Please set your ${keyName} in Settings to transcribe audio using cloud AI models.`,
       latencyMs: 15,
       wordCount: 0,
       costEstimate: 0.0,
@@ -161,25 +176,37 @@ export async function transcribeAudio(
 
     const form = new FormData()
     form.append('file', audioBlob, 'recording.wav')
-    form.append('model', modelId)
 
-    const response = await fetch('https://openrouter.ai/api/v1/audio/transcriptions', {
+    let endpointUrl = 'https://openrouter.ai/api/v1/audio/transcriptions'
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${effectiveApiKey}`,
+    }
+
+    if (isGroqModel) {
+      endpointUrl = 'https://api.groq.com/openai/v1/audio/transcriptions'
+      const actualGroqModel = modelId.replace('groq/', '')
+      form.append('model', actualGroqModel)
+    }
+    else {
+      form.append('model', modelId)
+      headers['HTTP-Referer'] = 'https://mainavoice.app'
+      headers['X-Title'] = 'Maina Voice Web App'
+    }
+
+    const response = await fetch(endpointUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': 'https://mainavoice.app',
-        'X-Title': 'Maina Voice Web App',
-      },
+      headers,
       body: form,
     })
 
     if (!response.ok) {
       const errText = await response.text()
-      let errorMsg = `OpenRouter HTTP ${response.status}: ${response.statusText}`
+      const providerName = isGroqModel ? 'Groq' : 'OpenRouter'
+      let errorMsg = `${providerName} HTTP ${response.status}: ${response.statusText}`
       try {
         const errJson = JSON.parse(errText)
         if (errJson.error?.message) {
-          errorMsg = `OpenRouter Error: ${errJson.error.message}`
+          errorMsg = `${providerName} Error: ${errJson.error.message}`
         }
       }
       catch {}

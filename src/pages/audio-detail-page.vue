@@ -171,6 +171,7 @@ async function runReTranscription() {
       selectedModel.value,
       store.openRouterApiKey,
       60,
+      store.groqApiKey,
     )
 
     if (
