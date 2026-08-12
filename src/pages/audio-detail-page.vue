@@ -507,7 +507,7 @@ onUnmounted(() => {
               Re-transcribe Audio
             </h3>
             <p class="text-xs text-muted-foreground">
-              Select a cloud engine to generate a new version of this transcript.
+              Select a cloud model to generate a new version of this transcript.
             </p>
           </div>
 

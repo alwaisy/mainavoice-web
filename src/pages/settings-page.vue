@@ -456,8 +456,8 @@ async function handleFactoryReset() {
         </div>
 
         <div v-if="engineStats.length" class="space-y-2 pt-2 border-t border-border/60">
-          <div class="text-[11px] font-bold text-foreground">
-            By engine
+          <div class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+            By model
           </div>
           <div class="space-y-2">
             <div v-for="row in engineStats" :key="row.engine" class="space-y-1">

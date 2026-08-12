@@ -266,13 +266,13 @@ onUnmounted(() => {
     <div class="flex items-center justify-center gap-2">
       <Select v-model="store.selectedModel">
         <SelectTrigger class="w-[320px] bg-card border-border shadow-xs">
-          <SelectValue placeholder="Select speech engine" />
+          <SelectValue placeholder="Select speech model" />
         </SelectTrigger>
 
         <SelectContent>
           <SelectGroup>
-            <SelectLabel class="text-xs font-semibold text-muted-foreground">
-              Speech-to-Text Engines
+            <SelectLabel class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Speech-to-Text Models
             </SelectLabel>
             <SelectItem
               v-for="model in ALL_MODELS"

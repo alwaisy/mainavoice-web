@@ -275,7 +275,7 @@ onUnmounted(() => {
     <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border border-border bg-card shadow-xs">
       <div>
         <h2 class="text-xs font-bold text-foreground">
-          Compare speech engines
+          Compare speech models
         </h2>
         <p class="text-[11px] text-muted-foreground">
           Compare speed, accuracy, and cost across multiple models.
@@ -344,7 +344,7 @@ onUnmounted(() => {
           {{ formatTimer(recordSeconds) }}
         </p>
         <p v-else-if="isProcessing" class="text-xs font-semibold text-muted-foreground animate-pulse">
-          Transcribing with {{ modelCount }} engines...
+          Transcribing with {{ modelCount }} models...
         </p>
         <p v-else class="text-xs font-bold text-foreground">
           Record audio
