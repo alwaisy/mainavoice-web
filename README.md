@@ -20,6 +20,31 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 **Backup and restore** — export everything (recordings, transcriptions, settings) as a ZIP archive. The filename includes your local time and IANA timezone so you can tell backups apart at a glance.
 
+## Usage Analytics & Cost Analysis
+
+![Usage Analytics](./docs/images/usage-analytics.png)
+
+### Pay-as-you-go vs. Subscription Model
+
+| Feature / Metric | **Wispr Flow** | **Maina Voice** |
+| --- | --- | --- |
+| **Pricing Model** | \$15/month (\$144/year) or free 2,000 words/week limit | **Pay-as-you-go** via OpenRouter API key |
+| **Cost per 1k Words** | Subscription lock-in regardless of usage | **~\$0.003 - \$0.02** total across AI providers |
+| **Multi-Engine Benchmarking** | Single proprietary model / fixed stack | Compare **OpenAI GPT-Transcribe**, **Fish Audio**, **Deepgram Nova-3**, **NVIDIA Parakeet** side by side |
+| **Privacy & Storage** | Cloud sync & account required | **100% Local IndexedDB** storage. Direct API call with your own key |
+| **Limits** | Hard word caps on free tier | No arbitrary limits — pay strictly for actual audio processed |
+
+### Real-World Cost & Expectations
+
+As shown in the usage analytics dashboard above:
+- **24 Transcriptions (2,594 words / ~6 minutes of speech audio)** cost only **\$0.07 total**.
+- Average cost per transcription run is fractions of a cent (e.g., Fish Audio Transcribe-1 at **\$0.01 / 6 runs**, Deepgram Nova-3 at **\$0.01 / 4 runs**).
+- For casual to moderate daily dictation (e.g., 20,000–30,000 words per month), total costs on OpenRouter typically remain **under \$0.50 - \$1.00 per month**, compared to Wispr Flow's flat **\$15/month** fee.
+
+### Expectations & Performance Breakdown
+- **Latency**: Speech processing runs asynchronously over OpenRouter, averaging **12s - 17s** depending on model complexity, network speed, and request overhead.
+- **Engine Flexibility**: Swap between state-of-the-art engines on the fly based on whether you need raw speed, cost optimization, or high accuracy for complex domains.
+
 ## Supported engines
 
 All transcription goes through [OpenRouter](https://openrouter.ai), so you only need one API key to access all of them:
