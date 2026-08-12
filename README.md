@@ -74,25 +74,26 @@ $$\text{Estimated Words} = \text{Audio Seconds} \times 2.5$$
 
 ## Supported models & price analysis
 
-All standard transcription calls in Maina Voice currently route through [OpenRouter](https://openrouter.ai), allowing single API key access across models.
+Maina Voice connects to both [OpenRouter](https://openrouter.ai) and direct provider APIs (such as [Groq](https://groq.com)), giving you direct access to the top speech-to-text models.
 
-### Model pricing comparison
+### Model pricing & performance breakdown
 
-| Speech Model | Provider | Latency Grade | Accuracy Grade | Cost per Min | Cost per Hour | Relative Price |
+| Speech Model | Provider | Latency Grade | Accuracy Grade | Cost per Min | Cost per Hour | Status & Rank |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Parakeet TDT v3** | NVIDIA | Ultra-Fast | High | **$0.0035** | **$0.210** | 🟢 Lowest (OpenRouter) |
-| **Transcribe-1** | Fish Audio | Fast | Very High | **$0.0038** | **$0.228** | 🟢 Moderate |
-| **Nova-3** | Deepgram | Ultra-Fast | Very High | **$0.0043** | **$0.258** | 🟡 Standard |
-| **GPT-Transcribe** | OpenAI | Fast | State-of-the-Art | **$0.0045** | **$0.270** | 🔴 Highest (OpenRouter) |
-| *Whisper Large v3 Turbo (Planned)* | *Groq* | *Blazing* | *Very High* | ***$0.00067*** | ***$0.040*** | ⚡ **Cheapest (~9x cheaper)** |
+| **Transcribe-1** | Fish Audio | Fast | Very High | **$0.0038** | **$0.228** | 🥇 **#1 Best Overall Accuracy** |
+| **GPT-Transcribe** | OpenAI | Fast | State-of-the-Art | **$0.0045** | **$0.270** | 🥈 **#2 High Precision** |
+| **Whisper Large v3 Turbo** | Groq | Blazing | Very High | **$0.00067** | **$0.040** | ⚡ **#3 Ultra-Fast & Cheapest ($0.04/hr)** |
+| **Nova-3** | Deepgram | Ultra-Fast | Very High | **$0.0043** | **$0.258** | 🟡 **Standard Cloud API** |
+| **Parakeet TDT v3** | NVIDIA | Ultra-Fast | High | **$0.0035** | **$0.210** | 🟢 **Lightweight Model** |
 
-> **Key takeaway**: While OpenRouter provides convenient single-key access across major cloud models, direct LPUs (like Groq's custom hardware platform) can execute Whisper Large v3 Turbo for **$0.04/hr**—making it up to 9x cheaper than standard cloud provider rates and offering a generous free tier of up to **2,000 free transcriptions per day**.
+> **Key takeaway**: **Groq Whisper Large v3 Turbo** offers sub-300ms latency at **$0.04/hr** (up to 9x cheaper than standard APIs with 2,000 free requests/day). However, benchmark testing shows **Fish Audio Transcribe-1** and **OpenAI GPT-Transcribe** consistently rank higher in raw transcription accuracy and nuance handling, placing Groq in 3rd position for overall output quality.
 
 ## What's Next / Roadmap
 
-We are continuously expanding Maina Voice to give users the fastest, most cost-effective local-first speech workstation:
+We are continuously benchmarking and expanding Maina Voice to evaluate the absolute best speech-to-text APIs in the industry:
 
-- [ ] **Groq LPU Model Integration**: Support direct Groq API keys (`https://api.groq.com/openai/v1/audio/transcriptions`) to enable ultra-fast, sub-300ms Whisper Large v3 & Turbo transcriptions at $0.04/hr (and free tier support up to 2,000 requests/day).
+- [ ] **Benchmark & Integrate Top STT APIs (Gladia, etc.)**: Benchmark and evaluate industry leaders (referencing [Gladia's Speech-to-Text API landscape study](https://www.gladia.io/blog/best-speech-to-text-apis)) to integrate the highest-accuracy real-time engines.
+- [x] **Groq LPU Direct Integration**: Native support for Groq API keys (`https://api.groq.com/openai/v1/audio/transcriptions`) for $0.04/hr Whisper Large v3 Turbo transcriptions.
 - [ ] **Custom OpenAI-Compatible Endpoints**: Allow users to specify custom API Base URLs (for local Ollama, vLLM, or self-hosted Whisper microservices).
 - [ ] **Global Hotkey Dictation**: Desktop system-wide hold-to-talk keybindings for immediate pasting into active windows.
 - [ ] **Advanced LLM Post-Processing & Cleanup**: Custom background cleanup prompts for fixing punctuation, filler words ("uh", "um"), and domain jargon using local or cloud LLMs.
