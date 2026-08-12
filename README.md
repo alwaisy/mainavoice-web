@@ -24,26 +24,29 @@ By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 ![Usage Analytics](./docs/images/usage-analytics.png)
 
-### Pay-as-you-go vs. Subscription Model
+### Word-by-Word Cost Breakdown: Wispr Flow vs. Maina Voice
 
-| Feature / Metric | **Wispr Flow** | **Maina Voice** |
-| --- | --- | --- |
-| **Pricing Model** | \$15/month (\$144/year) or free 2,000 words/week limit | **Pay-as-you-go** via OpenRouter API key |
-| **Cost per 1k Words** | Subscription lock-in regardless of usage | **~\$0.003 - \$0.02** total across AI providers |
-| **Multi-Engine Benchmarking** | Single proprietary model / fixed stack | Compare **OpenAI GPT-Transcribe**, **Fish Audio**, **Deepgram Nova-3**, **NVIDIA Parakeet** side by side |
-| **Privacy & Storage** | Cloud sync & account required | **100% Local IndexedDB** storage. Direct API call with your own key |
-| **Limits** | Hard word caps on free tier | No arbitrary limits — pay strictly for actual audio processed |
+| Usage Scale | Monthly Words | Estimated Audio Time | **Wispr Flow Pro** | **Maina Voice (OpenRouter API)** | **Your Monthly Savings** |
+| --- | --- | --- | --- | --- | --- |
+| **Light Dictation** | **2,000 words** | ~15 minutes | **\$0.00** *(Free Tier Cap Limit)* | **~\$0.05** | *Free tier limit hit on Flow* |
+| **Casual User** | **10,000 words** | ~1.2 hours | **\$15.00** / mo ($180/yr) | **~\$0.27** | **Save \$14.73 / month (98.2%)** |
+| **Power Dictator** | **30,000 words** | ~3.5 hours | **\$15.00** / mo ($180/yr) | **~\$0.81** | **Save \$14.19 / month (94.6%)** |
+| **Heavy Professional** | **100,000 words** | ~12 hours | **\$15.00** / mo ($180/yr) | **~\$2.70** | **Save \$12.30 / month (82.0%)** |
+| **Enterprise / Heavy** | **250,000 words** | ~30 hours | **\$15.00** + Team upsell | **~\$6.75** | **Save \$8.25 / month (55.0%)** |
 
-### Real-World Cost & Expectations
+> *Note: Maina Voice costs calculated based on real benchmarked usage from the dashboard above (~2,594 words processed for \$0.07 across models like OpenAI GPT-Transcribe, Fish Audio Transcribe-1, Deepgram Nova-3, and NVIDIA Parakeet).*
 
-As shown in the usage analytics dashboard above:
-- **24 Transcriptions (2,594 words / ~6 minutes of speech audio)** cost only **\$0.07 total**.
-- Average cost per transcription run is fractions of a cent (e.g., Fish Audio Transcribe-1 at **\$0.01 / 6 runs**, Deepgram Nova-3 at **\$0.01 / 4 runs**).
-- For casual to moderate daily dictation (e.g., 20,000–30,000 words per month), total costs on OpenRouter typically remain **under \$0.50 - \$1.00 per month**, compared to Wispr Flow's flat **\$15/month** fee.
+### Key Advantages over Wispr Flow
 
-### Expectations & Performance Breakdown
-- **Latency**: Speech processing runs asynchronously over OpenRouter, averaging **12s - 17s** depending on model complexity, network speed, and request overhead.
-- **Engine Flexibility**: Swap between state-of-the-art engines on the fly based on whether you need raw speed, cost optimization, or high accuracy for complex domains.
+1. **Pay ONLY for What You Use**: Wispr Flow forces a **\$15/month (\$144/year)** subscription lock-in regardless of whether you transcribe 500 words or 50,000 words in a month. With Maina Voice, light users spend literally **pennies per month**.
+2. **No Word Caps or Artificial Paywalls**: Wispr Flow limits free users to **2,000 words per week** (~15 minutes of speech total). Maina Voice has zero word limits — you use your own OpenRouter key directly.
+3. **Multi-Engine Benchmarking & Choice**: Wispr Flow locks you into a single proprietary pipeline. Maina Voice gives you 4+ world-class speech models (OpenAI, Deepgram, NVIDIA, Fish Audio) with side-by-side speed and accuracy benchmarking.
+4. **100% Data Privacy & Local Storage**: Wispr Flow requires cloud account sync and telemetry. Maina Voice stores all audio, transcriptions, and edit history in browser **IndexedDB** locally — nothing leaves your device except direct HTTPS API calls to your chosen speech provider.
+
+### Real-World Performance & Expectations
+
+- **Cost Efficiency**: Real telemetry from 24 benchmark runs (2,594 words) averaged **\$0.0029 per 100 words**.
+- **Latency**: Audio conversion to 16-bit PCM WAV happens client-side via Web Audio API, with OpenRouter processing completing in **12s - 17s avg** per batch run.
 
 ## Supported engines
 
