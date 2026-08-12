@@ -284,7 +284,7 @@ onUnmounted(() => {
   <div
     v-if="item"
     class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300"
-    :class="[item.isComparisonSuite ? 'w-full' : 'max-w-[714px] mx-auto']"
+    :class="[item.isComparisonSuite ? 'w-11/12 mx-auto' : 'max-w-[714px] mx-auto']"
   >
     <!-- Unboxed Navigation Header -->
     <div class="flex items-center justify-between">
@@ -390,7 +390,7 @@ onUnmounted(() => {
       </div>
 
       <!-- 2-Column Max Grid of Model Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div
           v-for="(ver, vIdx) in item.versions"
           :key="vIdx"

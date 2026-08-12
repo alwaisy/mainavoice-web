@@ -261,7 +261,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300">
+  <div class="space-y-6 animate-in fade-in-50 slide-in-from-bottom-3 duration-300 w-11/12 mx-auto">
     <!-- Hidden File Input -->
     <input
       ref="fileInputRef"
@@ -374,7 +374,7 @@ onUnmounted(() => {
     </div>
 
     <!-- 2x2 Grid Layout (Max 2 Columns) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div
         v-for="index in modelCount"
         :key="index"
