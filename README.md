@@ -2,7 +2,7 @@
 
 A browser-based voice transcription app that lets you record audio, send it to cloud speech-to-text models, and compare their speed and accuracy side by side. Everything stays local: no server, no account, no background telemetry.
 
-By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; MIT License
+By [Awais Alwaisy](https://alwaisy.dev) &nbsp;|&nbsp; [Maina Voice](https://mainavoice.alwaisy.dev) &nbsp;|&nbsp; MIT License
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Vue 3](https://img.shields.io/badge/Vue-3-42b883.svg)
